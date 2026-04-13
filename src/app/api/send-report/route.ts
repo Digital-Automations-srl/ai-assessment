@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import sharp from "sharp";
 import { buildLeadEmail, buildInternalEmail } from "@/lib/email";
 import { supabase } from "@/lib/supabase";
-import type { LeadData, QuizResults } from "@/lib/types";
+import { generateSpiderChartSVG } from "@/lib/spider-chart-svg";
+import { getTargetScore } from "@/lib/scoring";
+import type { LeadData, QuizResults, AxisKey } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -71,9 +74,38 @@ export async function POST(request: NextRequest) {
     const internalRecipient =
       process.env.REPORT_EMAIL || "digital@digitalautomations.it";
 
+    // --- Generate spider chart PNG ---
+    const chartData = results.axisResults.reduce(
+      (acc: Record<string, number>, a: { key: string; score: number }) => {
+        acc[a.key] = a.score;
+        return acc;
+      },
+      {} as Record<AxisKey, number>
+    ) as Record<AxisKey, number>;
+
+    const chartTarget = results.axisResults.reduce(
+      (acc: Record<string, number>, a: { key: string; score: number }) => {
+        acc[a.key] = getTargetScore(a.key as AxisKey, a.score);
+        return acc;
+      },
+      {} as Record<AxisKey, number>
+    ) as Record<AxisKey, number>;
+
+    const svgString = generateSpiderChartSVG(chartData, chartTarget);
+    const chartPng = await sharp(Buffer.from(svgString))
+      .resize(700)
+      .png()
+      .toBuffer();
+
     // --- Build emails ---
     const leadEmail = buildLeadEmail(lead, results);
     const internalEmail = buildInternalEmail(lead, results);
+
+    const chartAttachment = {
+      filename: "ai-readiness-chart.png",
+      content: chartPng,
+      cid: "spider-chart",
+    };
 
     // --- Send both emails ---
     await Promise.all([
@@ -82,12 +114,14 @@ export async function POST(request: NextRequest) {
         to: lead.email,
         subject: leadEmail.subject,
         html: leadEmail.html,
+        attachments: [chartAttachment],
       }),
       transporter.sendMail({
         from,
         to: internalRecipient,
         subject: internalEmail.subject,
         html: internalEmail.html,
+        attachments: [chartAttachment],
       }),
     ]);
 

@@ -138,6 +138,13 @@ ${headerBlock("AI Readiness Assessment")}
 
   <p style="margin:0 0 24px;font-size:14px;color:${TEXT_SECONDARY};">${results.overallMessage}</p>
 
+  <!-- Spider chart -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+  <tr><td align="center">
+    <img src="cid:spider-chart" alt="Grafico AI Readiness" width="560" style="max-width:100%;height:auto;display:block;margin:0 auto;" />
+  </td></tr>
+  </table>
+
   <!-- Axis scores -->
   <h2 style="margin:0 0 12px;font-size:16px;color:${DA_NAVY};">Punteggio per asse</h2>
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
