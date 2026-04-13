@@ -58,14 +58,14 @@ function polygonPoints(
 
 export default function SpiderChart({ data, targetData, size = 420 }: SpiderChartProps) {
   // Add padding around the chart for labels
-  const padding = 80;
+  const padding = 70;
   const vw = size + padding * 2;
   const vh = size + padding * 2;
   const cx = vw / 2;
   const cy = vh / 2;
-  const maxRadius = size * 0.35;
+  const maxRadius = size * 0.42;
   const total = AXES_ORDER.length;
-  const labelOffset = 36;
+  const labelOffset = 32;
 
   // Current data polygon (amber)
   const dataPoints = AXES_ORDER.map((key, i) => {
