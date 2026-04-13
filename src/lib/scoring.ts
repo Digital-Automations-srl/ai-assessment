@@ -14,15 +14,15 @@ const LEVEL_THRESHOLDS: {
 
 const MESSAGES: Record<string, string> = {
   "1.0-1.4":
-    "La tua azienda e' nella fase iniziale del percorso AI. Non hai ancora strutture, processi o tecnologia dedicata. E' la condizione della maggior parte delle PMI italiane: il momento giusto per partire con un approccio strutturato e' adesso.",
+    "La tua azienda è nella fase iniziale del percorso AI. Non hai ancora strutture, processi o tecnologia dedicata. È la condizione della maggior parte delle PMI italiane: il momento giusto per partire con un approccio strutturato è adesso.",
   "1.5-2.4":
-    "La tua azienda ha mosso i primi passi, ma senza una struttura organica. Ci sono iniziative isolate che rischiano di restare frammentate. Un programma strutturato puo' trasformare queste iniziative in un sistema governato.",
+    "La tua azienda ha mosso i primi passi, ma senza una struttura organica. Ci sono iniziative isolate che rischiano di restare frammentate. Un programma strutturato può trasformare queste iniziative in un sistema governato.",
   "2.5-3.4":
-    "La tua azienda sta costruendo una base solida. Hai gia' fatto scelte importanti, ma servono consolidamento e integrazione per passare dalla sperimentazione all'operativita'.",
+    "La tua azienda sta costruendo una base solida. Hai già fatto scelte importanti, ma servono consolidamento e integrazione per passare dalla sperimentazione all'operatività.",
   "3.5-4.4":
-    "La tua azienda ha un buon livello di maturita' AI. Le strutture ci sono; ora servono ottimizzazione, integrazione avanzata e consolidamento della governance.",
+    "La tua azienda ha un buon livello di maturità AI. Le strutture ci sono; ora servono ottimizzazione, integrazione avanzata e consolidamento della governance.",
   "4.5-5.0":
-    "La tua azienda e' tra le piu' avanzate nel panorama PMI italiano. Continua a investire in revisione periodica e innovazione.",
+    "La tua azienda è tra le più avanzate nel panorama PMI italiano. Continua a investire in revisione periodica e innovazione.",
 };
 
 export function getLevel(score: number): {
@@ -115,9 +115,9 @@ const COMPLIANCE_AREAS: ComplianceAreaDef[] = [
     reference: "AI Act Art. 6, GDPR Art. 6",
     scoreKeys: ["C2"],
     messages: {
-      red: "Non avete un registro degli strumenti AI in uso. E' il primo passo per la conformita'.",
+      red: "Non avete un registro degli strumenti AI in uso. È il primo passo per la conformità.",
       yellow:
-        "Avete iniziato a catalogare gli strumenti, ma il registro e' incompleto o non include la classificazione del rischio.",
+        "Avete iniziato a catalogare gli strumenti, ma il registro è incompleto o non include la classificazione del rischio.",
       green:
         "Registro presente e aggiornato. Verificate che includa la classificazione rischio per ogni strumento.",
     },
@@ -129,14 +129,14 @@ const COMPLIANCE_AREAS: ComplianceAreaDef[] = [
     reference: "AI Act Art. 5-6, Art. 26(2)",
     scoreKeys: ["C5", "A4"],
     messages: {
-      red: "Non documentate i casi d'uso AI ne' verificate se rientrano in pratiche ad alto rischio o vietate.",
+      red: "Non documentate i casi d'uso AI nè verificate se rientrano in pratiche ad alto rischio o vietate.",
       yellow:
         "Alcuni casi d'uso sono documentati, ma manca una verifica sistematica del livello di rischio.",
       green:
         "Casi d'uso documentati con classificazione rischio. Screening pratiche vietate completato.",
     },
     action:
-      "Documentate ogni caso d'uso AI con: finalita', dati coinvolti, livello di rischio, supervisore umano.",
+      "Documentate ogni caso d'uso AI con: finalità, dati coinvolti, livello di rischio, supervisore umano.",
   },
   {
     name: "AI Policy interna",
@@ -145,7 +145,7 @@ const COMPLIANCE_AREAS: ComplianceAreaDef[] = [
     messages: {
       red: "Non avete una policy scritta sull'uso dell'AI. I dipendenti non hanno regole chiare.",
       yellow:
-        "Avete una policy, ma non e' firmata da tutti o non viene monitorata l'aderenza.",
+        "Avete una policy, ma non è firmata da tutti o non viene monitorata l'aderenza.",
       green:
         "Policy scritta, distribuita, firmata e monitorata. Processo di approvazione nuovi strumenti attivo.",
     },
@@ -199,7 +199,7 @@ const COMPLIANCE_AREAS: ComplianceAreaDef[] = [
     reference: "Best practice, AI Act Art. 113",
     scoreKeys: ["G5", "T4"],
     messages: {
-      red: "Non monitorate l'uso dell'AI ne' avete processi per gestire problemi.",
+      red: "Non monitorate l'uso dell'AI nè avete processi per gestire problemi.",
       yellow:
         "Monitoraggio basico presente ma senza processi formali per incidenti.",
       green:
@@ -230,14 +230,30 @@ function calculateCompliance(
   });
 }
 
+// Minimum target floors — target is always max(floor, score + 1), capped at 5
+export const TARGET_FLOORS: Record<AxisKey, number> = {
+  conformita: 4.5,
+  processi: 4.0,
+  utilizzo: 3.0,
+  autonomia: 3.8,
+  protezione: 4.5,
+  tecnologia: 3.5,
+};
+
+export function getTargetScore(axisKey: AxisKey, currentScore: number): number {
+  const floor = TARGET_FLOORS[axisKey];
+  return Math.min(Math.max(floor, currentScore + 1), 5);
+}
+
+// Static reference kept for backward compatibility
 export const AFTER_TARGETS: Record<AxisKey, { score: number; label: string }> =
   {
-    conformita: { score: 3.5, label: "In costruzione" },
+    conformita: { score: 4.5, label: "Operativa" },
     processi: { score: 4.0, label: "Applicata" },
     utilizzo: { score: 3.0, label: "Strutturata" },
-    autonomia: { score: 3.5, label: "Formazione" },
-    protezione: { score: 4.0, label: "Protetta" },
-    tecnologia: { score: 4.0, label: "Integrata" },
+    autonomia: { score: 3.8, label: "Autonomia" },
+    protezione: { score: 4.5, label: "Protetta" },
+    tecnologia: { score: 3.5, label: "Base" },
   };
 
 export const LEVEL_LABELS: Record<AxisKey, string[]> = {
@@ -294,7 +310,7 @@ export const LEVEL_LABELS: Record<AxisKey, string[]> = {
 export const LEVEL_DETAILS: Record<AxisKey, string[]> = {
   conformita: [
     "",
-    "Nessun documento di conformita' AI. Nessun registro, nessuna DPIA, nessuna informativa aggiornata.",
+    "Nessun documento di conformità AI. Nessun registro, nessuna DPIA, nessuna informativa aggiornata.",
     "Il management sa che esistono AI Act e Legge 132/2025 ma non ha intrapreso azioni concrete.",
     "Registro AI avviato. Almeno 1 DPIA completata. Informative aggiornate per i trattamenti principali.",
     "Registro completo e aggiornato. DPIA per tutti i trattamenti ad alto rischio. Piano formativo L.132 in esecuzione.",
@@ -310,7 +326,7 @@ export const LEVEL_DETAILS: Record<AxisKey, string[]> = {
   ],
   utilizzo: [
     "",
-    "0-5% dipendenti usa AI, solo per curiosita' personale. Nessun agente operativo.",
+    "0-5% dipendenti usa AI, solo per curiosità personale. Nessun agente operativo.",
     "5-15% usa AI senza coordinamento. 1-2 casi d'uso informali.",
     "15-30% usa AI in modo coordinato. 2-3 casi d'uso definiti. 1-3 agenti operativi.",
     "30-60% usa AI regolarmente. 4-6 agenti in 2+ reparti. KPI tracciati.",
@@ -318,7 +334,7 @@ export const LEVEL_DETAILS: Record<AxisKey, string[]> = {
   ],
   autonomia: [
     "",
-    "Nessuna formazione AI. Il team non sa cos'e' un prompt o un agente.",
+    "Nessuna formazione AI. Il team non sa cos'è un prompt o un agente.",
     "Formazione non strutturata. Management con idea generica dell'AI.",
     "Management formato su governance. 2-3 AI Champions operativi. Team introdotto.",
     "Champions autonomi. Management integra AI nelle decisioni. Team usa strumenti senza assistenza.",

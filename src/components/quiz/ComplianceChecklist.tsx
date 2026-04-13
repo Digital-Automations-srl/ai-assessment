@@ -33,7 +33,7 @@ export default function ComplianceChecklist({
         className="text-xl font-extrabold"
         style={{ color: "#004172" }}
       >
-        Conformita&apos;: le 7 aree obbligatorie
+        Conformità: le 7 aree obbligatorie
       </h2>
       <p className="mt-2 text-sm leading-relaxed" style={{ color: "#666" }}>
         Verifica basata su AI Act (Reg. UE 2024/1689), GDPR (Reg. UE 2016/679)

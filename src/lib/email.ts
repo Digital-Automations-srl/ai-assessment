@@ -165,7 +165,7 @@ ${headerBlock("AI Readiness Assessment")}
       <p style="margin:0;font-size:13px;color:${TEXT_PRIMARY};line-height:1.5;">${insight.risk}</p>
     </td></tr>
     <tr><td style="padding:12px 16px;">
-      <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;color:#16a34a;">&#10003; Opportunita&apos; che stai perdendo</p>
+      <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;color:#16a34a;">&#10003; Opportunità che stai perdendo</p>
       <p style="margin:0;font-size:13px;color:${TEXT_PRIMARY};line-height:1.5;">${insight.opportunity}</p>
     </td></tr>
   </table>`;
@@ -189,8 +189,8 @@ ${headerBlock("AI Readiness Assessment")}
   <!-- CTA -->
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr><td align="center" style="padding:8px 0 0;">
-    <a href="https://digitalautomations.it" style="display:inline-block;background:${DA_BLUE};color:${WHITE};text-decoration:none;padding:14px 32px;border-radius:6px;font-size:15px;font-weight:600;">
-      Prenota una call con un consulente
+    <a href="https://landing.digitalautomations.it/demo-ai-stater-program" style="display:inline-block;background:${DA_BLUE};color:${WHITE};text-decoration:none;padding:14px 32px;border-radius:6px;font-size:15px;font-weight:600;">
+      Prenota una call di 15 minuti
     </a>
   </td></tr>
   </table>

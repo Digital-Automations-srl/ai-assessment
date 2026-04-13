@@ -17,6 +17,7 @@ export default function LeadForm({ onSubmit, isSubmitting }: LeadFormProps) {
     telefono: "",
     referral: "",
     consenso: false,
+    consensoMarketing: false,
   });
 
   const isValid =
@@ -153,7 +154,7 @@ export default function LeadForm({ onSubmit, isSubmitting }: LeadFormProps) {
           />
         </div>
 
-        {/* GDPR Checkbox */}
+        {/* Privacy Checkbox */}
         <div className="flex items-start gap-3 pt-2">
           <input
             type="checkbox"
@@ -168,9 +169,39 @@ export default function LeadForm({ onSubmit, isSubmitting }: LeadFormProps) {
             className="cursor-pointer text-xs leading-relaxed"
             style={{ color: "#666" }}
           >
-            Acconsento al trattamento dei dati personali ai sensi del GDPR
-            (Reg. UE 2016/679) per ricevere il report e comunicazioni relative
-            al servizio. *
+            Acconsento al trattamento dei miei dati personali per le finalità
+            di cui all&apos;
+            <a
+              href="https://digitalautomations.it/wp-content/uploads/2023/04/Informativa-sul-trattamento-dei-dati-completa-con-Marketing.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#016FC0", textDecoration: "underline" }}
+            >
+              informativa privacy
+            </a>
+            . *
+          </label>
+        </div>
+
+        {/* Marketing Checkbox */}
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="consensoMarketing"
+            checked={form.consensoMarketing}
+            onChange={(e) => handleChange("consensoMarketing", e.target.checked)}
+            className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded"
+            style={{ accentColor: "#016FC0" }}
+          />
+          <label
+            htmlFor="consensoMarketing"
+            className="cursor-pointer text-xs leading-relaxed"
+            style={{ color: "#666" }}
+          >
+            Autorizzo ai sensi dell&apos;art. 13 del D. Lgs. 196/2003 e
+            dell&apos;art. 13 del Regolamento UE n. 2016/679 (&quot;GDPR
+            2016/679&quot;), il trattamento dei dati personali per comunicazioni
+            commerciali o di marketing.
           </label>
         </div>
 

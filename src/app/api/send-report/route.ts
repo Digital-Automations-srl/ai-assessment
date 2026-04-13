@@ -91,6 +91,26 @@ export async function POST(request: NextRequest) {
       }),
     ]);
 
+    // --- Send to Encharge webhook (non-blocking) ---
+    const enchargeUrl = process.env.ENCHARGE_WEBHOOK_URL;
+    if (enchargeUrl) {
+      fetch(enchargeUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: lead.email,
+          firstName: lead.nome,
+          lastName: lead.cognome,
+          company: lead.azienda,
+          phone: lead.telefono || undefined,
+          aiReadinessScore: results.overallScore,
+          aiReadinessLabel: results.overallLabel,
+        }),
+      }).catch((err) => {
+        console.error("[encharge] Webhook error:", err);
+      });
+    }
+
     // --- Save to Supabase (non-blocking) ---
     if (supabase) {
       const axisScores = results.axisResults.reduce(

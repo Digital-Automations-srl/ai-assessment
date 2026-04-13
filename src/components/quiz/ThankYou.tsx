@@ -34,7 +34,7 @@ export default function ThankYou({ name, email }: ThankYouProps) {
       </h1>
 
       <p className="mt-4 text-base" style={{ color: "#666" }}>
-        Il tuo report e&apos; stato inviato a{" "}
+        Il tuo report è stato inviato a{" "}
         <strong style={{ color: "#333" }}>{email}</strong>.
       </p>
 

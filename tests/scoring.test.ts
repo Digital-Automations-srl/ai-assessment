@@ -65,8 +65,8 @@ describe("T02 – getMessage returns message for each score range", () => {
     expect(getMessage(4.0)).toContain("buon livello");
   });
 
-  it("score 5.0 → contains 'piu' avanzate'", () => {
-    expect(getMessage(5.0)).toContain("piu' avanzate");
+  it("score 5.0 → contains 'più avanzate'", () => {
+    expect(getMessage(5.0)).toContain("più avanzate");
   });
 });
 

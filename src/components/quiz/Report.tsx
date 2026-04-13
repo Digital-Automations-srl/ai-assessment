@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { AxisResult, ComplianceResult, AxisKey } from "@/lib/types";
-import { AFTER_TARGETS, LEVEL_LABELS, LEVEL_DETAILS } from "@/lib/scoring";
+import { LEVEL_LABELS, LEVEL_DETAILS, getTargetScore, getLevel } from "@/lib/scoring";
 import { AXIS_INSIGHTS, getInsightIndex } from "@/lib/report-content";
 import SpiderChart from "./SpiderChart";
 import ComplianceChecklist from "./ComplianceChecklist";
@@ -78,9 +78,9 @@ export default function Report({
       <div className="mt-8">
         <SpiderChart
           data={chartData}
-          targetData={Object.keys(AFTER_TARGETS).reduce(
-            (acc, key) => {
-              acc[key as AxisKey] = AFTER_TARGETS[key as AxisKey].score;
+          targetData={axisResults.reduce(
+            (acc, r) => {
+              acc[r.key] = getTargetScore(r.key, r.score);
               return acc;
             },
             {} as Record<AxisKey, number>
@@ -126,7 +126,8 @@ export default function Report({
           const levelIdx = getLevelIndex(axis.score);
           const labels = LEVEL_LABELS[axis.key];
           const details = LEVEL_DETAILS[axis.key];
-          const target = AFTER_TARGETS[axis.key];
+          const dynamicTarget = getTargetScore(axis.key, axis.score);
+          const targetLevel = getLevel(dynamicTarget);
 
           return (
             <div
@@ -213,7 +214,7 @@ export default function Report({
                       style={{ backgroundColor: "#f0fdf4", borderLeft: "3px solid #16a34a" }}
                     >
                       <span className="text-xs font-semibold uppercase" style={{ color: "#16a34a" }}>
-                        Opportunita&apos; che stai perdendo
+                        Opportunità che stai perdendo
                       </span>
                       <p className="mt-1 text-sm leading-relaxed" style={{ color: "#333" }}>
                         {insight.opportunity}
@@ -229,7 +230,7 @@ export default function Report({
                       </span>
                       <p className="mt-1 text-sm" style={{ color: "#016FC0" }}>
                         <strong>
-                          {target.score.toFixed(1)} - {target.label}
+                          {dynamicTarget.toFixed(1)} - {targetLevel.label}
                         </strong>
                       </p>
                     </div>
@@ -260,20 +261,20 @@ export default function Report({
         </h2>
 
         <p className="mt-3 text-sm leading-relaxed" style={{ color: "#444" }}>
-          L&apos;AI Starter Program di Digital Automations e&apos; un percorso
+          L&apos;AI Starter Program di Digital Automations è un percorso
           strutturato di 90 giorni che copre tutte e 6 le aree del tuo assessment:
         </p>
         <ul className="mt-2 space-y-1 text-sm" style={{ color: "#444" }}>
-          <li>&#x2022; <strong>Formazione management</strong> — governance, rischi, opportunita&apos; strategiche</li>
+          <li>&#x2022; <strong>Formazione management</strong> — governance, rischi, opportunità strategiche</li>
           <li>&#x2022; <strong>Formazione team</strong> — competenze operative, prompt engineering, best practice</li>
-          <li>&#x2022; <strong>Conformita&apos; normativa</strong> — AI Act, GDPR, L.132/2025, documentazione</li>
+          <li>&#x2022; <strong>Conformità normativa</strong> — AI Act, GDPR, L.132/2025, documentazione</li>
           <li>&#x2022; <strong>Piattaforma AI aziendale</strong> — strumenti integrati, sicuri, governati</li>
           <li>&#x2022; <strong>Modello AI Champions</strong> — referenti interni per autonomia duratura</li>
         </ul>
 
         <div className="mt-6 flex flex-col items-center gap-3">
           <a
-            href="https://calendly.com/digital-automations"
+            href="https://landing.digitalautomations.it/demo-ai-stater-program"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block cursor-pointer rounded-lg px-8 py-3 text-center font-bold text-white transition-colors"
@@ -285,7 +286,7 @@ export default function Report({
               (e.currentTarget.style.backgroundColor = "#016FC0")
             }
           >
-            Prenota una call di 30 minuti
+            Prenota una call di 15 minuti
           </a>
         </div>
       </div>

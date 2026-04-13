@@ -76,4 +76,5 @@ export interface LeadData {
   telefono: string;
   referral: string;
   consenso: boolean;
+  consensoMarketing: boolean;
 }

@@ -11,7 +11,7 @@ export default function Landing({ onStart }: LandingProps) {
         className="mx-auto max-w-2xl text-[28px] leading-tight font-extrabold md:text-[36px]"
         style={{ color: "#004172" }}
       >
-        Quanto e&apos; pronta la tua azienda per l&apos;AI?
+        Quanto è pronta la tua azienda per l&apos;AI?
       </h1>
 
       <p
@@ -19,7 +19,7 @@ export default function Landing({ onStart }: LandingProps) {
         style={{ color: "#666666" }}
       >
         30 domande, 8 minuti. Scopri il tuo livello su 6 aree chiave e verifica
-        la conformita&apos; su 7 obblighi normativi.
+        la conformità su 7 obblighi normativi.
       </p>
 
       <button

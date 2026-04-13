@@ -18,7 +18,7 @@ const AXES_ORDER: AxisKey[] = [
 ];
 
 const AXIS_LABELS: Record<AxisKey, string> = {
-  conformita: "Conformita'",
+  conformita: "Conformità",
   processi: "Processi e Controlli",
   utilizzo: "Utilizzo Reale",
   autonomia: "Autonomia Team",
@@ -57,11 +57,15 @@ function polygonPoints(
 }
 
 export default function SpiderChart({ data, targetData, size = 420 }: SpiderChartProps) {
-  const cx = size / 2;
-  const cy = size / 2;
+  // Add padding around the chart for labels
+  const padding = 80;
+  const vw = size + padding * 2;
+  const vh = size + padding * 2;
+  const cx = vw / 2;
+  const cy = vh / 2;
   const maxRadius = size * 0.35;
   const total = AXES_ORDER.length;
-  const labelOffset = 28;
+  const labelOffset = 36;
 
   // Current data polygon (amber)
   const dataPoints = AXES_ORDER.map((key, i) => {
@@ -85,7 +89,7 @@ export default function SpiderChart({ data, targetData, size = 420 }: SpiderChar
 
   return (
     <svg
-      viewBox={`0 0 ${size} ${size}`}
+      viewBox={`0 0 ${vw} ${vh}`}
       className="mx-auto w-full"
       style={{ maxWidth: size }}
     >

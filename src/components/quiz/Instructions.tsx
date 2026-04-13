@@ -20,22 +20,22 @@ export default function Instructions({ onContinue }: InstructionsProps) {
 
         <div className="space-y-3 text-[15px] leading-relaxed" style={{ color: "#444" }}>
           <p>
-            Questo e&apos; un assessment reale, non un quiz generico. I risultati
-            dipendono dalla sincerita&apos; delle risposte.
+            Questo è un assessment reale, non un quiz generico. I risultati
+            dipendono dalla sincerità delle risposte.
           </p>
           <ul className="list-disc space-y-2 pl-5">
             <li>
-              Rispondi in base a quello che e&apos; effettivamente implementato nella
-              tua azienda, non a quello che vorresti o che e&apos; in programma.
+              Rispondi in base a quello che è effettivamente implementato nella
+              tua azienda, non a quello che vorresti o che è in programma.
             </li>
             <li>
-              In caso di dubbio, scegli l&apos;opzione piu&apos; conservativa: il
-              risultato sara&apos; piu&apos; utile.
+              In caso di dubbio, scegli l&apos;opzione più conservativa: il
+              risultato sarà più utile.
             </li>
             <li>
-              Il quiz e&apos; pensato per il titolare, CEO o responsabile AI. Se
-              non hai visibilita&apos; su un&apos;area, rispondi per la tua
-              funzione: il consulente integrera&apos; il quadro.
+              Il quiz è pensato per il titolare, CEO o responsabile AI. Se
+              non hai visibilità su un&apos;area, rispondi per la tua
+              funzione: il consulente integrerà il quadro.
             </li>
           </ul>
           <p style={{ color: "#666" }}>

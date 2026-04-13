@@ -2,7 +2,7 @@
 
 import type { AxisResult, AxisKey } from "@/lib/types";
 import SpiderChart from "./SpiderChart";
-import { AFTER_TARGETS } from "@/lib/scoring";
+import { getTargetScore } from "@/lib/scoring";
 
 interface ResultsProps {
   overallScore: number;
@@ -29,9 +29,10 @@ export default function Results({
     {} as Record<AxisKey, number>
   );
 
-  const targetData = Object.keys(AFTER_TARGETS).reduce(
-    (acc, key) => {
-      acc[key as AxisKey] = AFTER_TARGETS[key as AxisKey].score;
+  // Target = max(floor, score + 1), capped at 5
+  const targetData = axisResults.reduce(
+    (acc, r) => {
+      acc[r.key] = getTargetScore(r.key, r.score);
       return acc;
     },
     {} as Record<AxisKey, number>

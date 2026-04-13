@@ -10,11 +10,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "AI Readiness Assessment | Digital Automations",
   description:
-    "Quanto e' pronta la tua azienda per l'AI? 30 domande, 8 minuti. Scopri il tuo livello su 6 aree chiave e verifica la conformita' su 7 obblighi normativi.",
+    "Quanto è pronta la tua azienda per l'AI? 30 domande, 8 minuti. Scopri il tuo livello su 6 aree chiave e verifica la conformità su 7 obblighi normativi.",
   openGraph: {
     title: "AI Readiness Assessment | Digital Automations",
     description:
-      "Quanto e' pronta la tua azienda per l'AI? Quiz gratuito di autovalutazione per PMI.",
+      "Quanto è pronta la tua azienda per l'AI? Quiz gratuito di autovalutazione per PMI.",
     type: "website",
     url: "https://aiassessment.digitalautomations.it",
   },

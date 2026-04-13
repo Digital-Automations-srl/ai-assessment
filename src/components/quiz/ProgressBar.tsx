@@ -13,10 +13,13 @@ export default function ProgressBar({
 }: ProgressBarProps) {
   return (
     <div className="mb-6">
-      <p className="text-sm font-semibold" style={{ color: "#004172" }}>
-        Asse {axisIndex + 1} di {totalAxes}: {axisLabel}
+      <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "#666" }}>
+        Asse {axisIndex + 1} di {totalAxes}
       </p>
-      <div className="mt-1.5 flex gap-1">
+      <h2 className="mt-1 text-xl font-extrabold" style={{ color: "#004172" }}>
+        {axisLabel}
+      </h2>
+      <div className="mt-2 flex gap-1">
         {Array.from({ length: totalAxes }, (_, i) => (
           <div
             key={i}

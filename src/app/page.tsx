@@ -46,7 +46,7 @@ export default function QuizPage() {
     return calculateResults(scoreMap, contextAnswers, AXES);
   }, [quizAnswers, contextAnswers]);
 
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "instant" });
 
   // --- Context page handlers ---
   const handleContextSelect = (questionId: string, option: string) => {
