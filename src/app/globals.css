@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+:root {
+  --da-navy: #004172;
+  --da-blue: #016FC0;
+  --da-light-gray: #E4E4E4;
+  --da-amber: #E09900;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --color-da-navy: var(--da-navy);
+  --color-da-blue: var(--da-blue);
+  --color-da-light-gray: var(--da-light-gray);
+  --color-da-amber: var(--da-amber);
+}
+
+body {
+  background: #ffffff;
+  color: #333333;
+}
