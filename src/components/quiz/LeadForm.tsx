@@ -25,7 +25,8 @@ export default function LeadForm({ onSubmit, isSubmitting }: LeadFormProps) {
     form.cognome.trim() !== "" &&
     form.email.trim() !== "" &&
     form.azienda.trim() !== "" &&
-    form.consenso;
+    form.consenso &&
+    form.consensoMarketing;
 
   const handleChange = (field: keyof LeadData, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -201,7 +202,7 @@ export default function LeadForm({ onSubmit, isSubmitting }: LeadFormProps) {
             Autorizzo ai sensi dell&apos;art. 13 del D. Lgs. 196/2003 e
             dell&apos;art. 13 del Regolamento UE n. 2016/679 (&quot;GDPR
             2016/679&quot;), il trattamento dei dati personali per comunicazioni
-            commerciali o di marketing.
+            commerciali o di marketing. *
           </label>
         </div>
 
