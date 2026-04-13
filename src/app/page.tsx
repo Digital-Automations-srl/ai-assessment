@@ -7,9 +7,8 @@ import type { LeadData } from "@/lib/types";
 import Header from "@/components/quiz/Header";
 import Landing from "@/components/quiz/Landing";
 import Instructions from "@/components/quiz/Instructions";
-import ContextQuestion from "@/components/quiz/ContextQuestion";
-import QuizQuestion from "@/components/quiz/QuizQuestion";
-import AxisTransition from "@/components/quiz/AxisTransition";
+import ContextPage from "@/components/quiz/ContextPage";
+import AxisPage from "@/components/quiz/AxisPage";
 import Results from "@/components/quiz/Results";
 import LeadForm from "@/components/quiz/LeadForm";
 import Report from "@/components/quiz/Report";
@@ -20,7 +19,6 @@ type Step =
   | "instructions"
   | "context"
   | "quiz"
-  | "axis-transition"
   | "results"
   | "lead-form"
   | "report"
@@ -28,9 +26,7 @@ type Step =
 
 export default function QuizPage() {
   const [step, setStep] = useState<Step>("landing");
-  const [contextIndex, setContextIndex] = useState(0);
   const [axisIndex, setAxisIndex] = useState(0);
-  const [questionIndex, setQuestionIndex] = useState(0);
   const [contextAnswers, setContextAnswers] = useState<Record<string, string>>(
     {}
   );
@@ -41,7 +37,6 @@ export default function QuizPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentAxis = AXES[axisIndex];
-  const currentQuestion = currentAxis?.questions[questionIndex];
 
   const computeResults = useCallback(() => {
     const scoreMap: Record<string, number> = {};
@@ -53,35 +48,26 @@ export default function QuizPage() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
-  // --- Context question handlers ---
-  const handleContextSelect = (option: string) => {
+  // --- Context page handlers ---
+  const handleContextSelect = (questionId: string, option: string) => {
     setContextAnswers((prev) => ({
       ...prev,
-      [CONTEXT_QUESTIONS[contextIndex].id]: option,
+      [questionId]: option,
     }));
   };
 
   const handleContextNext = () => {
-    if (contextIndex < CONTEXT_QUESTIONS.length - 1) {
-      setContextIndex((i) => i + 1);
-    } else {
-      setStep("quiz");
-      setAxisIndex(0);
-      setQuestionIndex(0);
-    }
+    setStep("quiz");
+    setAxisIndex(0);
     scrollToTop();
   };
 
   const handleContextBack = () => {
-    if (contextIndex > 0) {
-      setContextIndex((i) => i - 1);
-    } else {
-      setStep("instructions");
-    }
+    setStep("instructions");
     scrollToTop();
   };
 
-  // --- Quiz question handlers ---
+  // --- Quiz (axis page) handlers ---
   const handleQuizSelect = (
     questionId: string,
     optionLetter: string,
@@ -94,10 +80,8 @@ export default function QuizPage() {
   };
 
   const handleQuizNext = () => {
-    if (questionIndex < currentAxis.questions.length - 1) {
-      setQuestionIndex((i) => i + 1);
-    } else if (axisIndex < AXES.length - 1) {
-      setStep("axis-transition");
+    if (axisIndex < AXES.length - 1) {
+      setAxisIndex((i) => i + 1);
     } else {
       setStep("results");
     }
@@ -105,22 +89,11 @@ export default function QuizPage() {
   };
 
   const handleQuizBack = () => {
-    if (questionIndex > 0) {
-      setQuestionIndex((i) => i - 1);
-    } else if (axisIndex > 0) {
+    if (axisIndex > 0) {
       setAxisIndex((i) => i - 1);
-      setQuestionIndex(AXES[axisIndex - 1].questions.length - 1);
     } else {
       setStep("context");
-      setContextIndex(CONTEXT_QUESTIONS.length - 1);
     }
-    scrollToTop();
-  };
-
-  const handleAxisTransitionContinue = () => {
-    setAxisIndex((i) => i + 1);
-    setQuestionIndex(0);
-    setStep("quiz");
     scrollToTop();
   };
 
@@ -176,48 +149,30 @@ export default function QuizPage() {
           <Instructions
             onContinue={() => {
               setStep("context");
-              setContextIndex(0);
               scrollToTop();
             }}
           />
         )}
 
         {step === "context" && (
-          <ContextQuestion
-            question={CONTEXT_QUESTIONS[contextIndex]}
-            selectedOption={
-              contextAnswers[CONTEXT_QUESTIONS[contextIndex].id] ?? null
-            }
+          <ContextPage
+            questions={CONTEXT_QUESTIONS}
+            answers={contextAnswers}
             onSelect={handleContextSelect}
             onNext={handleContextNext}
-            onBack={contextIndex > 0 ? handleContextBack : undefined}
-            questionIndex={contextIndex}
-            totalQuestions={CONTEXT_QUESTIONS.length}
+            onBack={handleContextBack}
           />
         )}
 
-        {step === "quiz" && currentQuestion && (
-          <QuizQuestion
-            question={currentQuestion}
-            axisLabel={currentAxis.label}
+        {step === "quiz" && currentAxis && (
+          <AxisPage
+            axis={currentAxis}
             axisIndex={axisIndex}
             totalAxes={AXES.length}
-            questionIndex={questionIndex}
-            totalQuestions={currentAxis.questions.length}
-            selectedOption={quizAnswers[currentQuestion.id]?.letter ?? null}
+            answers={quizAnswers}
             onSelect={handleQuizSelect}
             onNext={handleQuizNext}
             onBack={handleQuizBack}
-          />
-        )}
-
-        {step === "axis-transition" && (
-          <AxisTransition
-            completedAxisLabel={currentAxis.label}
-            nextAxisLabel={AXES[axisIndex + 1]?.label ?? ""}
-            nextAxisIndex={axisIndex + 1}
-            totalAxes={AXES.length}
-            onContinue={handleAxisTransitionContinue}
           />
         )}
 

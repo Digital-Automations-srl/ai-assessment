@@ -29,9 +29,13 @@ export default function RootLayout({
     <html lang="it" className={`${inter.variable} h-full antialiased`}>
       <head>
         <script
-          defer
-          data-domain="aiassessment.digitalautomations.it"
-          src="https://plausible.io/js/script.js"
+          async
+          src="https://plausible.io/js/pa-ToATiIVt8-S306KREIm2x.js"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init()`,
+          }}
         />
       </head>
       <body className="min-h-full flex flex-col font-sans">{children}</body>

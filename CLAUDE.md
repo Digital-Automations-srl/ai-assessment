@@ -1,21 +1,18 @@
-<!-- Template v1.7 — manuale-coproduzione -->
-# Nome Progetto
-
-<!-- Sostituisci con il nome del tuo progetto -->
+# AI Readiness Assessment
 
 ## Progetto
 
-<!-- 1-2 frasi: cosa fa il progetto, per chi, obiettivo principale -->
-App web per [descrizione breve]. Stack: Next.js + PostgreSQL su Vercel.
+Quiz di autovalutazione AI Readiness per PMI italiane. Misura la maturita' AI su 6 assi (30 domande), produce un grafico a ragno SVG, una checklist compliance su 7 aree obbligatorie, e raccoglie lead per follow-up commerciale.
+
+Dominio: `aiassessment.digitalautomations.it`
 
 ## Stack Tecnologico
 
-- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes / Server Actions
-- **Database**: PostgreSQL (Supabase)
-- **Auth**: NextAuth.js v5
-- **Deploy**: Vercel
-<!-- Aggiungi o rimuovi voci in base al tuo stack reale -->
+- **Frontend + Backend**: Next.js 16, React 19, TypeScript, Tailwind CSS 4
+- **Email**: Nodemailer via AWS SES SMTP
+- **Analytics**: Plausible
+- **Deploy**: Vercel (auto-deploy da GitHub)
+- **Database**: Nessuno (tutto client-side, dati inviati via email)
 
 ## Comandi
 
@@ -23,62 +20,59 @@ App web per [descrizione breve]. Stack: Next.js + PostgreSQL su Vercel.
 npm run dev          # Dev server (http://localhost:3000)
 npm run build        # Build produzione
 npm run lint         # ESLint
-npm test             # Vitest
-npm run db:migrate   # Applica migration
-npm run db:seed      # Seed dati di test
 ```
-<!-- Sostituisci con i comandi reali del progetto. Includi TUTTI i comandi
-     che Claude potrebbe dover eseguire: build, test, lint, dev, migration. -->
 
 ## Struttura Cartelle
 
 ```
 src/
-  app/           # Route e pagine (App Router)
-  components/    # Componenti React riutilizzabili
-  lib/           # Utility, client DB, helpers
-  actions/       # Server Actions
-  types/         # Tipi TypeScript condivisi
+  app/
+    page.tsx                    # Orchestratore quiz (state machine)
+    layout.tsx                  # Root layout + metadata + Plausible
+    globals.css                 # Tailwind + variabili colore DA
+    api/send-report/route.ts    # API POST: invio email report
+  components/quiz/
+    Header.tsx                  # Header fisso
+    Landing.tsx                 # Step 1: landing page
+    Instructions.tsx            # Step 2: istruzioni pre-quiz
+    ContextPage.tsx             # Step 3: 3 domande contesto (una pagina)
+    AxisPage.tsx                # Step 4: 5 domande per asse (una pagina per asse)
+    ProgressBar.tsx             # Barra progresso per asse
+    SpiderChart.tsx             # Grafico a ragno SVG
+    Results.tsx                 # Step 5: risultato gratuito
+    LeadForm.tsx                # Step 6: form cattura lead
+    Report.tsx                  # Step 7: report dettagliato
+    ComplianceChecklist.tsx     # 7 aree compliance con semaforo
+    ThankYou.tsx                # Step 8: conferma
+  lib/
+    quiz-data.ts                # 33 domande (3 contesto + 30 quiz)
+    scoring.ts                  # Calcolo punteggi, livelli, compliance
+    email.ts                    # Template email HTML (lead + interno)
+    types.ts                    # Tipi TypeScript
 docs/
-  prd/           # PRD per le feature
-prisma/
-  schema.prisma  # Schema database
+  specs/                        # Specifiche quiz e componente ragno JSX
+  coproduzione/                 # Manuali co-produzione
 ```
-<!-- Descrivi solo le directory principali. Aggiorna quando la struttura cambia. -->
 
 ## Convenzioni
 
-- **Naming file**: kebab-case per file (`user-profile.tsx`), PascalCase per componenti (`UserProfile`)
-- **Lingua**: codice e commenti in inglese, UI in italiano
+- **Naming file**: PascalCase per componenti (`AxisPage.tsx`)
+- **Lingua**: codice in inglese, UI in italiano
 - **Import**: path alias `@/` per `src/`
-- **Componenti**: server component di default, `"use client"` solo se necessario
-- **Error handling**: try/catch nelle Server Actions, error boundary per UI
-<!-- Aggiungi convenzioni specifiche del progetto. Esempi concreti aiutano
-     Claude a seguire i pattern esistenti. -->
+- **Componenti**: tutti `"use client"` (quiz e' interamente client-side)
+- **Colori DA**: Navy #004172, Blue #016FC0, Light Gray #E4E4E4, Amber #E09900
 
 ## Note Tecniche
 
-<!-- Inserisci qui gotcha, workaround, e decisioni architetturali non ovvie.
-     Esempio: "Le API esterne X hanno rate limit di 100 req/min — usare il
-     queue in src/lib/queue.ts" -->
-- Le migration vanno create manualmente, MAI auto-generate da Claude
-- Il file `.env.local` contiene i secret — non committare mai
+- Il quiz e' una state machine client-side: landing → instructions → context → quiz (6 assi) → results → lead-form → report → thank-you
+- Email inviate via API route `/api/send-report` (POST) con nodemailer + AWS SES SMTP
+- Due email: una al lead (report), una a digital@digitalautomations.it (notifica interna)
+- Il file `.env.local` contiene i secret SMTP — non committare mai
+- Specifiche complete: `docs/specs/QUIZ_SPECS.md`
+- Scoring: G2 opzione C = 2.5 (non standard), "Non so" = 1.5
 
 ## Regole di Sessione
 
-- Usa plan mode per qualsiasi task non banale: 3+ passaggi, decisioni architetturali, o modifiche a 3+ file
-- Per task complessi, usa subagenti per ricerca/analisi. Mantieni pulito il contesto principale. Un task per subagente
-- Dopo una correzione dell'utente, registra il pattern in `.claude/rules/lessons.md`. Rivedi le lezioni a inizio sessione
-- Esegui `npm run build && npm run lint && npm test` prima di dichiarare completato
+- Esegui `npm run build && npm run lint` prima di dichiarare completato
 - NON installare pacchetti senza approvazione
-- NON creare migration DB senza approvazione
 - Committa al completamento di ogni sotto-task logico
-<!-- Aggiungi regole specifiche. Queste vengono lette ad ogni sessione e
-     dopo ogni compaction del contesto — devono essere le piu' importanti. -->
-
-## Workflow Co-Produzione
-
-- Regole operative AI: `.claude/rules/coproduzione.md`
-- Manuale co-produzione (riferimento umano): `docs/coproduzione/MANUALE-COPRODUZIONE-AI.md`
-- Prompt sessione PM: `docs/coproduzione/PROMPT-PM.md`
-<!-- Rimuovi questa sezione se non usi il manuale di co-produzione -->
