@@ -2,6 +2,49 @@
 
 import type { Axis } from "@/lib/types";
 import ProgressBar from "./ProgressBar";
+import Tooltip from "./Tooltip";
+
+const GLOSSARY: { term: string; explanation: string }[] = [
+  { term: "DPIA", explanation: "Data Protection Impact Assessment: valutazione d'impatto sulla protezione dei dati, obbligatoria per trattamenti ad alto rischio (GDPR Art. 35)." },
+  { term: "AI Act", explanation: "Regolamento UE 2024/1689 sull'Intelligenza Artificiale. Stabilisce obblighi per chi sviluppa o usa sistemi AI nell'Unione Europea." },
+  { term: "GDPR", explanation: "General Data Protection Regulation (Reg. UE 2016/679). Norma europea sulla protezione dei dati personali." },
+  { term: "shadow AI", explanation: "Uso di strumenti AI non autorizzati dall'azienda, spesso con dati aziendali su piattaforme pubbliche senza controllo." },
+  { term: "AUP", explanation: "Acceptable Use Policy: documento che definisce le regole per l'uso degli strumenti AI in azienda." },
+];
+
+function renderWithTooltips(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  let remaining = text;
+  let key = 0;
+
+  while (remaining.length > 0) {
+    let earliestMatch: { index: number; term: string; explanation: string } | null = null;
+
+    for (const g of GLOSSARY) {
+      const idx = remaining.toLowerCase().indexOf(g.term.toLowerCase());
+      if (idx !== -1 && (earliestMatch === null || idx < earliestMatch.index)) {
+        earliestMatch = { index: idx, term: g.term, explanation: g.explanation };
+      }
+    }
+
+    if (!earliestMatch) {
+      parts.push(remaining);
+      break;
+    }
+
+    if (earliestMatch.index > 0) {
+      parts.push(remaining.slice(0, earliestMatch.index));
+    }
+
+    const matchedText = remaining.slice(earliestMatch.index, earliestMatch.index + earliestMatch.term.length);
+    parts.push(
+      <Tooltip key={key++} term={matchedText} explanation={earliestMatch.explanation} />
+    );
+    remaining = remaining.slice(earliestMatch.index + earliestMatch.term.length);
+  }
+
+  return parts;
+}
 
 interface AxisPageProps {
   axis: Axis;
@@ -46,13 +89,12 @@ export default function AxisPage({
                 className="mb-4 text-[15px] font-semibold"
                 style={{ color: "#004172" }}
               >
-                {idx + 1}. {question.text}
+                {idx + 1}. {renderWithTooltips(question.text)}
               </p>
 
               <div className="space-y-2">
                 {question.options.map((option) => {
                   const isSelected = selectedLetter === option.letter;
-                  const isNonSo = option.isNonSo === true;
 
                   return (
                     <button
@@ -62,19 +104,14 @@ export default function AxisPage({
                       }
                       className="flex w-full cursor-pointer items-start gap-3 rounded-lg border-2 p-3 text-left transition-all"
                       style={{
-                        borderColor: isSelected
-                          ? "#016FC0"
-                          : isNonSo
-                            ? "rgba(224, 153, 0, 0.4)"
-                            : "#E4E4E4",
+                        borderColor: isSelected ? "#016FC0" : "#E4E4E4",
                         backgroundColor: isSelected
                           ? "rgba(1, 111, 192, 0.05)"
-                          : isNonSo
-                            ? "#FFF8E7"
-                            : "white",
+                          : "white",
                         boxShadow: isSelected
                           ? "0 1px 4px rgba(1, 111, 192, 0.15)"
                           : "none",
+                        minHeight: "44px",
                       }}
                     >
                       <span
@@ -86,15 +123,9 @@ export default function AxisPage({
                           minHeight: "24px",
                         }}
                       >
-                        {isNonSo ? "?" : option.letter}
+                        {option.letter}
                       </span>
-                      <span
-                        className="text-sm"
-                        style={{
-                          color: "#333",
-                          fontStyle: isNonSo ? "italic" : "normal",
-                        }}
-                      >
+                      <span className="text-sm" style={{ color: "#333" }}>
                         {option.text}
                       </span>
                     </button>

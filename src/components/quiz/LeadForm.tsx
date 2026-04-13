@@ -15,6 +15,7 @@ export default function LeadForm({ onSubmit, isSubmitting }: LeadFormProps) {
     email: "",
     azienda: "",
     telefono: "",
+    referral: "",
     consenso: false,
   });
 
@@ -122,7 +123,7 @@ export default function LeadForm({ onSubmit, isSubmitting }: LeadFormProps) {
 
         {/* Telefono */}
         <div>
-          <label className="mb-1 block text-sm font-medium" style={{ color: "#999" }}>
+          <label className="mb-1 block text-sm font-medium" style={{ color: "#666" }}>
             Telefono (opzionale)
           </label>
           <input
@@ -136,6 +137,22 @@ export default function LeadForm({ onSubmit, isSubmitting }: LeadFormProps) {
           />
         </div>
 
+        {/* Referral */}
+        <div>
+          <label className="mb-1 block text-sm font-medium" style={{ color: "#666" }}>
+            Chi ti ha consigliato il quiz? (opzionale)
+          </label>
+          <input
+            type="text"
+            value={form.referral}
+            onChange={(e) => handleChange("referral", e.target.value)}
+            style={inputStyle}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "#016FC0")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "#E4E4E4")}
+            placeholder="Nome consulente o azienda"
+          />
+        </div>
+
         {/* GDPR Checkbox */}
         <div className="flex items-start gap-3 pt-2">
           <input
@@ -143,7 +160,7 @@ export default function LeadForm({ onSubmit, isSubmitting }: LeadFormProps) {
             id="consenso"
             checked={form.consenso}
             onChange={(e) => handleChange("consenso", e.target.checked)}
-            className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded"
+            className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded"
             style={{ accentColor: "#016FC0" }}
           />
           <label

@@ -4,6 +4,7 @@ import type { AxisKey } from "@/lib/types";
 
 interface SpiderChartProps {
   data: Record<AxisKey, number>;
+  targetData?: Record<AxisKey, number>;
   size?: number;
 }
 
@@ -34,7 +35,6 @@ function getPoint(
   index: number,
   total: number
 ): [number, number] {
-  // Start from 12 o'clock (-PI/2), go clockwise
   const angle = (2 * Math.PI * index) / total - Math.PI / 2;
   return [
     centerX + radius * Math.cos(angle),
@@ -56,14 +56,14 @@ function polygonPoints(
     .join(" ");
 }
 
-export default function SpiderChart({ data, size = 420 }: SpiderChartProps) {
+export default function SpiderChart({ data, targetData, size = 420 }: SpiderChartProps) {
   const cx = size / 2;
   const cy = size / 2;
   const maxRadius = size * 0.35;
   const total = AXES_ORDER.length;
   const labelOffset = 28;
 
-  // Data polygon points
+  // Current data polygon (amber)
   const dataPoints = AXES_ORDER.map((key, i) => {
     const value = data[key] ?? 0;
     const r = (value / LEVELS) * maxRadius;
@@ -71,12 +71,23 @@ export default function SpiderChart({ data, size = 420 }: SpiderChartProps) {
   });
   const dataPolygon = dataPoints.map(([x, y]) => `${x},${y}`).join(" ");
 
+  // Target data polygon (blue) — optional
+  const targetPoints = targetData
+    ? AXES_ORDER.map((key, i) => {
+        const value = targetData[key] ?? 0;
+        const r = (value / LEVELS) * maxRadius;
+        return getPoint(cx, cy, r, i, total);
+      })
+    : null;
+  const targetPolygon = targetPoints
+    ? targetPoints.map(([x, y]) => `${x},${y}`).join(" ")
+    : null;
+
   return (
     <svg
       viewBox={`0 0 ${size} ${size}`}
-      width={size}
-      height={size}
-      className="mx-auto"
+      className="mx-auto w-full"
+      style={{ maxWidth: size }}
     >
       {/* Concentric pentagon grid */}
       {Array.from({ length: LEVELS }).map((_, level) => {
@@ -112,7 +123,6 @@ export default function SpiderChart({ data, size = 420 }: SpiderChartProps) {
       {/* Level numbers */}
       {Array.from({ length: LEVELS }).map((_, level) => {
         const r = ((level + 1) / LEVELS) * maxRadius;
-        // Place numbers along the first axis (12 o'clock)
         const [x, y] = getPoint(cx, cy, r, 0, total);
         return (
           <text
@@ -120,7 +130,7 @@ export default function SpiderChart({ data, size = 420 }: SpiderChartProps) {
             x={x + 6}
             y={y + 3}
             fontSize="10"
-            fill="#999"
+            fill="#666"
             textAnchor="start"
           >
             {level + 1}
@@ -128,23 +138,49 @@ export default function SpiderChart({ data, size = 420 }: SpiderChartProps) {
         );
       })}
 
-      {/* Result polygon */}
+      {/* Target polygon (blue, behind current) */}
+      {targetPolygon && (
+        <>
+          <polygon
+            points={targetPolygon}
+            fill="#016FC0"
+            fillOpacity={0.15}
+            stroke="#016FC0"
+            strokeWidth={2.2}
+            strokeLinejoin="round"
+          />
+          {targetPoints!.map(([x, y], i) => (
+            <circle
+              key={`target-dot-${i}`}
+              cx={x}
+              cy={y}
+              r={4}
+              fill="#016FC0"
+              stroke="white"
+              strokeWidth={1.5}
+            />
+          ))}
+        </>
+      )}
+
+      {/* Current data polygon (amber) */}
       <polygon
         points={dataPolygon}
-        fill="#016FC0"
-        fillOpacity={0.15}
-        stroke="#016FC0"
+        fill="#E09900"
+        fillOpacity={0.18}
+        stroke="#E09900"
         strokeWidth={2.2}
+        strokeLinejoin="round"
       />
 
-      {/* Vertex dots */}
+      {/* Current vertex dots */}
       {dataPoints.map(([x, y], i) => (
         <circle
           key={`dot-${i}`}
           cx={x}
           cy={y}
           r={4}
-          fill="#016FC0"
+          fill="#E09900"
           stroke="white"
           strokeWidth={1.5}
         />

@@ -224,6 +224,7 @@ ${headerBlock("Notifica Interno - Nuovo Lead")}
     <tr><td style="padding:4px 8px;font-size:13px;color:${TEXT_SECONDARY};">Email</td><td style="padding:4px 8px;font-size:13px;"><a href="mailto:${lead.email}" style="color:${DA_BLUE};">${lead.email}</a></td></tr>
     <tr><td style="padding:4px 8px;font-size:13px;color:${TEXT_SECONDARY};">Azienda</td><td style="padding:4px 8px;font-size:13px;">${lead.azienda}</td></tr>
     <tr><td style="padding:4px 8px;font-size:13px;color:${TEXT_SECONDARY};">Telefono</td><td style="padding:4px 8px;font-size:13px;">${lead.telefono}</td></tr>
+    ${lead.referral ? `<tr><td style="padding:4px 8px;font-size:13px;color:${TEXT_SECONDARY};">Referral</td><td style="padding:4px 8px;font-size:13px;">${lead.referral}</td></tr>` : ""}
   </table>
 
   <!-- Context answers -->

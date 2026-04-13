@@ -321,7 +321,6 @@ export const AXES: Axis[] = [
         text: "Avete visibilita' su quali strumenti AI i dipendenti usano al di fuori di quelli autorizzati dall'azienda?",
         options: [
           { letter: "A", score: 1, text: "No, nessuna visibilita'. Sappiamo che qualcuno usa ChatGPT, ma non sappiamo quanti, quanto spesso, o con quali dati." },
-          { letter: "?", score: 1.5, text: "Non ne sono sicuro. Credo che qualcuno in azienda (IT, sicurezza) se ne occupi, ma non ho visibilita' diretta.", isNonSo: true },
           { letter: "B", score: 2, text: "Sospettiamo che alcuni usino strumenti esterni, ma non monitoriamo. Ogni tanto sentiamo storie informali." },
           { letter: "C", score: 3, text: "Abbiamo una regola che chiede di segnalare l'uso di nuovi strumenti, ma il monitoraggio e' manuale e non sempre rispettato." },
           { letter: "D", score: 4, text: "Monitoriamo attivamente il traffico per identificare accessi a strumenti AI non autorizzati. Blocchiamo o registriamo." },
@@ -333,7 +332,6 @@ export const AXES: Axis[] = [
         text: "Come controllate chi accede alla vostra piattaforma AI e cosa ci fa?",
         options: [
           { letter: "A", score: 1, text: "Non abbiamo una piattaforma AI aziendale. Ogni dipendente usa il proprio account personale; nessun log." },
-          { letter: "?", score: 1.5, text: "Non ne sono sicuro. Credo che IT gestisca gli accessi, ma non ho visibilita' sul dettaglio.", isNonSo: true },
           { letter: "B", score: 2, text: "Abbiamo una piattaforma, ma tutti usano le stesse credenziali o non c'e' distinzione di ruoli. Non tracciamo chi fa cosa." },
           { letter: "C", score: 3, text: "Ogni dipendente ha il proprio account. Log disponibili ma non revisionati regolarmente. Nessuna distinzione di ruoli per livello di accesso." },
           { letter: "D", score: 4, text: "Accessi differenziati per ruolo (chi puo' fare cosa). Log completo di tutte le attivita'. Gli accessi vengono aggiornati quando cambia il ruolo o la persona lascia l'azienda." },
@@ -363,7 +361,6 @@ export const AXES: Axis[] = [
         text: "Che tipo di piattaforma AI usa la vostra azienda?",
         options: [
           { letter: "A", score: 1, text: "Non abbiamo nessuna piattaforma AI aziendale." },
-          { letter: "?", score: 1.5, text: "Non ne sono sicuro. So che qualcuno in azienda usa strumenti AI, ma non so se esista una piattaforma centralizzata.", isNonSo: true },
           { letter: "B", score: 2, text: "Alcuni dipendenti hanno abbonamenti personali (ChatGPT Plus, Copilot, ecc.) senza coordinamento." },
           { letter: "C", score: 3, text: "Abbiamo una piattaforma AI centralizzata, accessibile a tutto il team autorizzato, con gestione utenti." },
           { letter: "D", score: 4, text: "Piattaforma centralizzata con gestione utenti e ruoli, piu' modelli AI disponibili, e almeno un collegamento con i sistemi aziendali (CRM, gestionale, ecc.)." },
@@ -386,7 +383,6 @@ export const AXES: Axis[] = [
         text: "La vostra piattaforma AI e' collegata ai vostri sistemi aziendali (gestionale, CRM, archivio documenti, email)?",
         options: [
           { letter: "A", score: 1, text: "No, gli strumenti AI sono completamente separati da tutto il resto." },
-          { letter: "?", score: 1.5, text: "Non ne sono sicuro. Potrebbe esserci qualche collegamento gestito da IT, ma non ho visibilita'.", isNonSo: true },
           { letter: "B", score: 2, text: "No, ma stiamo valutando come collegarli (esportazioni manuali, copia-incolla)." },
           { letter: "C", score: 3, text: "Si', 1 integrazione pilota attiva (es. l'AI legge documenti dal nostro archivio)." },
           { letter: "D", score: 4, text: "Si', 2-3 integrazioni operative (es. AI accede al CRM, consulta il gestionale, legge le email)." },

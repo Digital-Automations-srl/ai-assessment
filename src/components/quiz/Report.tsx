@@ -75,7 +75,28 @@ export default function Report({
       </div>
 
       <div className="mt-8">
-        <SpiderChart data={chartData} size={380} />
+        <SpiderChart
+          data={chartData}
+          targetData={Object.keys(AFTER_TARGETS).reduce(
+            (acc, key) => {
+              acc[key as AxisKey] = AFTER_TARGETS[key as AxisKey].score;
+              return acc;
+            },
+            {} as Record<AxisKey, number>
+          )}
+          size={380}
+        />
+        {/* Legend */}
+        <div className="mt-3 flex justify-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: "#E09900" }} />
+            <span className="text-xs font-semibold" style={{ color: "#E09900" }}>La tua azienda</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: "#016FC0" }} />
+            <span className="text-xs font-semibold" style={{ color: "#016FC0" }}>Obiettivo DA (90gg)</span>
+          </div>
+        </div>
       </div>
 
       <div
@@ -159,7 +180,7 @@ export default function Report({
                 >
                   <div className="space-y-3">
                     <div>
-                      <span className="text-xs font-semibold uppercase" style={{ color: "#999" }}>
+                      <span className="text-xs font-semibold uppercase" style={{ color: "#666" }}>
                         Livello attuale
                       </span>
                       <p className="mt-1 text-sm" style={{ color: "#333" }}>
@@ -174,7 +195,7 @@ export default function Report({
                       className="rounded-lg p-3"
                       style={{ backgroundColor: "#f0f7ff" }}
                     >
-                      <span className="text-xs font-semibold uppercase" style={{ color: "#999" }}>
+                      <span className="text-xs font-semibold uppercase" style={{ color: "#666" }}>
                         Obiettivo dopo AI Starter Program
                       </span>
                       <p className="mt-1 text-sm" style={{ color: "#016FC0" }}>
@@ -231,15 +252,6 @@ export default function Report({
             }
           >
             Prenota una call di 30 minuti
-          </a>
-          <a
-            href="https://digitalautomations.it/ai-starter-program"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium underline"
-            style={{ color: "#016FC0" }}
-          >
-            Scopri l&apos;AI Starter Program
           </a>
         </div>
       </div>

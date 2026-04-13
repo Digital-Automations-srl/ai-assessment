@@ -21,7 +21,7 @@ export default function ContextPage({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <p className="mb-1 text-sm" style={{ color: "#999" }}>
+      <p className="mb-1 text-sm" style={{ color: "#666" }}>
         Informazioni di contesto
       </p>
       <h2
@@ -58,7 +58,7 @@ export default function ContextPage({
                       backgroundColor: isSelected
                         ? "rgba(1, 111, 192, 0.05)"
                         : "white",
-                      minHeight: "40px",
+                      minHeight: "44px",
                     }}
                   >
                     <span className="text-sm" style={{ color: "#333" }}>

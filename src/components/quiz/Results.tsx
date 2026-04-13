@@ -1,8 +1,8 @@
 "use client";
 
-import type { AxisResult } from "@/lib/types";
+import type { AxisResult, AxisKey } from "@/lib/types";
 import SpiderChart from "./SpiderChart";
-import type { AxisKey } from "@/lib/types";
+import { AFTER_TARGETS } from "@/lib/scoring";
 
 interface ResultsProps {
   overallScore: number;
@@ -24,6 +24,14 @@ export default function Results({
   const chartData = axisResults.reduce(
     (acc, r) => {
       acc[r.key] = r.score;
+      return acc;
+    },
+    {} as Record<AxisKey, number>
+  );
+
+  const targetData = Object.keys(AFTER_TARGETS).reduce(
+    (acc, key) => {
+      acc[key as AxisKey] = AFTER_TARGETS[key as AxisKey].score;
       return acc;
     },
     {} as Record<AxisKey, number>
@@ -57,7 +65,18 @@ export default function Results({
 
       {/* Spider chart */}
       <div className="mt-8">
-        <SpiderChart data={chartData} size={380} />
+        <SpiderChart data={chartData} targetData={targetData} size={380} />
+        {/* Legend */}
+        <div className="mt-3 flex justify-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: "#E09900" }} />
+            <span className="text-xs font-semibold" style={{ color: "#E09900" }}>La tua azienda</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: "#016FC0" }} />
+            <span className="text-xs font-semibold" style={{ color: "#016FC0" }}>Obiettivo DA (90gg)</span>
+          </div>
+        </div>
       </div>
 
       {/* Score table */}
@@ -84,7 +103,7 @@ export default function Results({
               {axis.score.toFixed(1)}
             </span>
 
-            <span className="text-xs" style={{ color: "#999" }}>
+            <span className="text-xs" style={{ color: "#666" }}>
               /5.0
             </span>
 

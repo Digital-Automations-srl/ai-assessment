@@ -38,7 +38,7 @@ export default function Landing({ onStart }: LandingProps) {
 
       <div className="mt-6 flex flex-row gap-6">
         {["Gratuito", "8 minuti", "Risultato immediato"].map((badge) => (
-          <span key={badge} className="text-sm" style={{ color: "#999999" }}>
+          <span key={badge} className="text-sm" style={{ color: "#666666" }}>
             {badge}
           </span>
         ))}

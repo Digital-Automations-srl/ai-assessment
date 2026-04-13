@@ -74,5 +74,6 @@ export interface LeadData {
   email: string;
   azienda: string;
   telefono: string;
+  referral: string;
   consenso: boolean;
 }

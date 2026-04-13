@@ -33,11 +33,12 @@ export default function Instructions({ onContinue }: InstructionsProps) {
               risultato sara&apos; piu&apos; utile.
             </li>
             <li>
-              Per ogni domanda esiste l&apos;opzione &quot;Non sono sicuro&quot; se
-              non conosci la risposta.
+              Il quiz e&apos; pensato per il titolare, CEO o responsabile AI. Se
+              non hai visibilita&apos; su un&apos;area, rispondi per la tua
+              funzione: il consulente integrera&apos; il quadro.
             </li>
           </ul>
-          <p style={{ color: "#999" }}>
+          <p style={{ color: "#666" }}>
             Tempo stimato: 8-10 minuti.
           </p>
         </div>

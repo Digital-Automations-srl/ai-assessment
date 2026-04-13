@@ -137,31 +137,13 @@ describe("T19 – All option scores are in valid range [1, 5]", () => {
   });
 });
 
-// ─── T20: "Non so" options are correctly marked ─────────────────────────
-describe("T20 – 'Non so' options have isNonSo=true and score=1.5", () => {
-  it("questions with Non so: D3, D4, T1, T3", () => {
-    const nonSoQuestionIds = ["D3", "D4", "T1", "T3"];
-    const foundNonSo: string[] = [];
-
+// ─── T20: No "Non so" options present ───────────────────────────────────
+describe("T20 – No 'Non so' options in any question", () => {
+  it("no question has isNonSo options", () => {
     for (const axis of AXES) {
       for (const q of axis.questions) {
         const hasNonSo = q.options.some((o) => o.isNonSo === true);
-        if (hasNonSo) foundNonSo.push(q.id);
-      }
-    }
-
-    expect(foundNonSo.sort()).toEqual(nonSoQuestionIds.sort());
-  });
-
-  it("all isNonSo options have score 1.5 and letter '?'", () => {
-    for (const axis of AXES) {
-      for (const q of axis.questions) {
-        for (const opt of q.options) {
-          if (opt.isNonSo) {
-            expect(opt.score).toBe(1.5);
-            expect(opt.letter).toBe("?");
-          }
-        }
+        expect(hasNonSo).toBe(false);
       }
     }
   });

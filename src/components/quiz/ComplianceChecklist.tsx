@@ -67,7 +67,7 @@ export default function ComplianceChecklist({
                     >
                       {item.name}
                     </span>
-                    <span className="text-xs" style={{ color: "#999" }}>
+                    <span className="text-xs" style={{ color: "#666" }}>
                       {item.reference}
                     </span>
                     <span
