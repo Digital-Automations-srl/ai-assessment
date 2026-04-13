@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { buildLeadEmail, buildInternalEmail } from "@/lib/email";
+import { supabase } from "@/lib/supabase";
 import type { LeadData, QuizResults } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
@@ -89,6 +90,39 @@ export async function POST(request: NextRequest) {
         html: internalEmail.html,
       }),
     ]);
+
+    // --- Save to Supabase (non-blocking) ---
+    if (supabase) {
+      const axisScores = results.axisResults.reduce(
+        (acc: Record<string, number>, a: { key: string; score: number }) => {
+          acc[`score_${a.key}`] = a.score;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
+
+      supabase
+        .from("submissions")
+        .insert({
+          nome: lead.nome,
+          cognome: lead.cognome,
+          email: lead.email,
+          azienda: lead.azienda,
+          telefono: lead.telefono || null,
+          referral: lead.referral || null,
+          settore: results.contextAnswers?.["settore"] ?? results.contextAnswers?.["Settore"] ?? null,
+          dipendenti: results.contextAnswers?.["dipendenti"] ?? results.contextAnswers?.["Dipendenti"] ?? null,
+          ai_usage: results.contextAnswers?.["uso AI"] ?? results.contextAnswers?.["Uso AI"] ?? null,
+          overall_score: results.overallScore,
+          overall_label: results.overallLabel,
+          ...axisScores,
+          answers: results.contextAnswers,
+          compliance: results.compliance,
+        })
+        .then(({ error: dbError }) => {
+          if (dbError) console.error("[supabase] Insert error:", dbError.message);
+        });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
