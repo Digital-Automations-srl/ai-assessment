@@ -1,4 +1,5 @@
-import type { LeadData, QuizResults, AxisResult, ComplianceResult } from "./types";
+import type { LeadData, QuizResults, AxisResult, ComplianceResult, AxisKey } from "./types";
+import { AXIS_INSIGHTS, getInsightIndex } from "./report-content";
 
 // --- Colors ---
 const DA_NAVY = "#004172";
@@ -147,6 +148,42 @@ ${headerBlock("AI Readiness Assessment")}
   <h2 style="margin:0 0 12px;font-size:16px;color:${DA_NAVY};">Compliance Snapshot</h2>
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
   ${complianceRows}
+  </table>
+
+  <!-- Per-axis insights -->
+  <h2 style="margin:0 0 12px;font-size:16px;color:${DA_NAVY};">Analisi per area</h2>
+  ${results.axisResults
+    .map((a: AxisResult) => {
+      const insight = AXIS_INSIGHTS[a.key as AxisKey][getInsightIndex(a.score)];
+      return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;border:1px solid ${BORDER};border-radius:6px;overflow:hidden;">
+    <tr><td style="background:${getLevelColor(a.score)};padding:10px 16px;">
+      <strong style="color:${WHITE};font-size:14px;">${a.label}</strong>
+      <span style="color:rgba(255,255,255,0.9);font-size:13px;float:right;">${a.score.toFixed(1)}/5 &middot; ${a.levelLabel}</span>
+    </td></tr>
+    <tr><td style="padding:12px 16px;border-bottom:1px solid ${BORDER};">
+      <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;color:#dc2626;">&#9888; Rischio concreto</p>
+      <p style="margin:0;font-size:13px;color:${TEXT_PRIMARY};line-height:1.5;">${insight.risk}</p>
+    </td></tr>
+    <tr><td style="padding:12px 16px;">
+      <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;color:#16a34a;">&#10003; Opportunita&apos; che stai perdendo</p>
+      <p style="margin:0;font-size:13px;color:${TEXT_PRIMARY};line-height:1.5;">${insight.opportunity}</p>
+    </td></tr>
+  </table>`;
+    })
+    .join("")}
+
+  <!-- AI Starter Program -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;background:#f0f7ff;border-radius:6px;border:1px solid ${DA_BLUE}20;">
+  <tr><td style="padding:16px 20px;">
+    <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:${DA_NAVY};">L&apos;AI Starter Program copre tutte e 6 le aree:</p>
+    <p style="margin:0;font-size:13px;color:${TEXT_PRIMARY};line-height:1.8;">
+      &#8226; <strong>Formazione management</strong> &mdash; governance, rischi, opportunit&agrave; strategiche<br/>
+      &#8226; <strong>Formazione team</strong> &mdash; competenze operative, prompt engineering, best practice<br/>
+      &#8226; <strong>Conformit&agrave; normativa</strong> &mdash; AI Act, GDPR, L.132/2025, documentazione<br/>
+      &#8226; <strong>Piattaforma AI aziendale</strong> &mdash; strumenti integrati, sicuri, governati<br/>
+      &#8226; <strong>Modello AI Champions</strong> &mdash; referenti interni per autonomia duratura
+    </p>
+  </td></tr>
   </table>
 
   <!-- CTA -->

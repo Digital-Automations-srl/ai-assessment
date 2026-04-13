@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { AxisResult, ComplianceResult, AxisKey } from "@/lib/types";
 import { AFTER_TARGETS, LEVEL_LABELS, LEVEL_DETAILS } from "@/lib/scoring";
+import { AXIS_INSIGHTS, getInsightIndex } from "@/lib/report-content";
 import SpiderChart from "./SpiderChart";
 import ComplianceChecklist from "./ComplianceChecklist";
 
@@ -173,7 +174,9 @@ export default function Report({
               </button>
 
               {/* Expanded content */}
-              {isExpanded && (
+              {isExpanded && (() => {
+                const insight = AXIS_INSIGHTS[axis.key][getInsightIndex(axis.score)];
+                return (
                 <div
                   className="border-t px-4 py-4"
                   style={{ borderColor: "#E4E4E4" }}
@@ -188,6 +191,32 @@ export default function Report({
                           {labels[levelIdx]}
                         </strong>{" "}
                         - {details[levelIdx]}
+                      </p>
+                    </div>
+
+                    {/* Risk */}
+                    <div
+                      className="rounded-lg p-3"
+                      style={{ backgroundColor: "#fef2f2", borderLeft: "3px solid #dc2626" }}
+                    >
+                      <span className="text-xs font-semibold uppercase" style={{ color: "#dc2626" }}>
+                        Rischio concreto
+                      </span>
+                      <p className="mt-1 text-sm leading-relaxed" style={{ color: "#333" }}>
+                        {insight.risk}
+                      </p>
+                    </div>
+
+                    {/* Opportunity */}
+                    <div
+                      className="rounded-lg p-3"
+                      style={{ backgroundColor: "#f0fdf4", borderLeft: "3px solid #16a34a" }}
+                    >
+                      <span className="text-xs font-semibold uppercase" style={{ color: "#16a34a" }}>
+                        Opportunita&apos; che stai perdendo
+                      </span>
+                      <p className="mt-1 text-sm leading-relaxed" style={{ color: "#333" }}>
+                        {insight.opportunity}
                       </p>
                     </div>
 
@@ -206,7 +235,8 @@ export default function Report({
                     </div>
                   </div>
                 </div>
-              )}
+                );
+              })()}
             </div>
           );
         })}
@@ -231,11 +261,15 @@ export default function Report({
 
         <p className="mt-3 text-sm leading-relaxed" style={{ color: "#444" }}>
           L&apos;AI Starter Program di Digital Automations e&apos; un percorso
-          strutturato di 90 giorni progettato per portare la tua azienda dal
-          livello attuale a un livello operativo su tutte e 6 le aree. Include
-          conformita&apos; normativa, formazione, deployment di agenti AI e
-          governance.
+          strutturato di 90 giorni che copre tutte e 6 le aree del tuo assessment:
         </p>
+        <ul className="mt-2 space-y-1 text-sm" style={{ color: "#444" }}>
+          <li>&#x2022; <strong>Formazione management</strong> — governance, rischi, opportunita&apos; strategiche</li>
+          <li>&#x2022; <strong>Formazione team</strong> — competenze operative, prompt engineering, best practice</li>
+          <li>&#x2022; <strong>Conformita&apos; normativa</strong> — AI Act, GDPR, L.132/2025, documentazione</li>
+          <li>&#x2022; <strong>Piattaforma AI aziendale</strong> — strumenti integrati, sicuri, governati</li>
+          <li>&#x2022; <strong>Modello AI Champions</strong> — referenti interni per autonomia duratura</li>
+        </ul>
 
         <div className="mt-6 flex flex-col items-center gap-3">
           <a
