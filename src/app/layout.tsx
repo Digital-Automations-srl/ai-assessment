@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({
@@ -27,18 +28,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it" className={`${inter.variable} h-full antialiased`}>
-      <head>
-        <script
-          async
+      <head />
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        <Script
           src="https://plausible.io/js/pa-ToATiIVt8-S306KREIm2x.js"
+          strategy="afterInteractive"
         />
-        <script
+        <Script
+          id="plausible-init"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init()`,
           }}
         />
-      </head>
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      </body>
     </html>
   );
 }

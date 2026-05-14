@@ -58,7 +58,7 @@ function polygonPoints(
 
 export default function SpiderChart({ data, targetData, size = 420 }: SpiderChartProps) {
   // Add padding around the chart for labels
-  const padding = 70;
+  const padding = 85;
   const vw = size + padding * 2;
   const vh = size + padding * 2;
   const cx = vw / 2;

@@ -261,6 +261,13 @@ ${headerBlock("Notifica Interno - Nuovo Lead")}
   </td></tr>
   </table>
 
+  <!-- Spider chart -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+  <tr><td align="center">
+    <img src="cid:spider-chart" alt="Grafico AI Readiness" width="560" style="max-width:100%;height:auto;display:block;margin:0 auto;" />
+  </td></tr>
+  </table>
+
   <!-- Lead data -->
   <h2 style="margin:0 0 8px;font-size:15px;color:${DA_NAVY};">Dati Lead</h2>
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">

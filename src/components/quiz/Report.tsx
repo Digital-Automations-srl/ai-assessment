@@ -85,7 +85,7 @@ export default function Report({
             },
             {} as Record<AxisKey, number>
           )}
-          size={380}
+          size={520}
         />
         {/* Legend */}
         <div className="mt-3 flex justify-center gap-6">

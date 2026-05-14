@@ -66,7 +66,7 @@ export default function Results({
 
       {/* Spider chart */}
       <div className="mt-8">
-        <SpiderChart data={chartData} targetData={targetData} size={380} />
+        <SpiderChart data={chartData} targetData={targetData} size={520} />
         {/* Legend */}
         <div className="mt-3 flex justify-center gap-6">
           <div className="flex items-center gap-2">
