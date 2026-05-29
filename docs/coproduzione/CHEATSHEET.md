@@ -1,6 +1,6 @@
 # Claude Code — Cheatsheet
 
-> **v1.7** — Quick reference dal [Manuale di Co-Produzione AI](MANUALE-COPRODUZIONE-AI.md). Stampabile su 1 pagina A4.
+> **v1.8.1** — Quick reference dal [Manuale di Co-Produzione AI](MANUALE-COPRODUZIONE-AI.md). Stampabile su 1 pagina A4.
 
 ## Setup Iniziale
 
@@ -52,6 +52,31 @@ claude -w wave1-a                   claude -p -w wave1-b \
 | `/worktree` | Crea worktree da dentro la sessione |
 
 **Plan Mode**: Claude propone piano → rivedi → approva → implementa. Attivabile con `--mode plan` o automaticamente su task complessi.
+
+## Modalita' PM (skill)
+
+Trigger della skill `sessione-pm` (dipendenza esterna, installata dal setup in `~/.claude/skills/sessione-pm/` come symlink al repo clone):
+
+| Frase | Cosa succede |
+|-------|--------------|
+| `avvia una sessione di PM` | Skill carica workflow PM: diagnosi stato + report + delega |
+| `modalita' PM` / `PM mode` | Idem (sinonimi) |
+| `passa in modalita' PM` | Idem (sinonimi) |
+
+**Override per-progetto** (opzionale): `.claude/rules/pm-mode.md` (sponsor, deadline, quality gate). Vince sui default della skill.
+
+## Aggiornamento Manuale
+
+| Azione | Come |
+|---|---|
+| Versione installata | Leggi `.claude/.coproduzione-version` (campo `version`) |
+| Controlla update | `aggiorna manuale di co-produzione` (skill `aggiorna-coproduzione`, default `check`) |
+| Applica update | Stessa skill, sotto-comando `apply` (conferma richiesta) |
+| Ignora una versione | `aggiorna-coproduzione snooze X.Y.Z` |
+| Health-check skill PM | `aggiorna-coproduzione health-check` |
+| Hook periodico settimanale | Opt-in al setup (registra `~/.claude/hooks/coproduzione-update-check.sh` in `~/.claude/settings.json`) |
+
+Granularita' apply: patch=tutto + 1 conferma · minor=per modulo · major=per modulo + display MIGRATION. Backup obbligatorio (ultime 3 versioni). File personalizzabili (`CLAUDE.md`, `pm-mode.md`, CI workflow, pre-commit hook) mai sovrascritti — solo diff suggerito.
 
 ## Flag Headless / CI
 

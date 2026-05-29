@@ -1,8 +1,14 @@
-# Prompt PM — Template Universale
+# Prompt PM — Esempio di riferimento
 
-> Copia questo file nella root del progetto (o in `docs/prompts/`).
-> Sostituisci i placeholder `{{...}}` con i dati del tuo progetto.
-> Poi incolla il blocco tra i ``` in una nuova sessione Claude Code.
+> **Quando usare questo file**
+>
+> Dalla v1.8 la modalita' PM e' fornita dalla **skill `sessione-pm`** (dipendenza esterna versionata nel repo `git@github.com:edoitaly/sessione-pm.git`, installata via clone + symlink in `~/.claude/skills/sessione-pm/`). Trigger naturale: "avvia una sessione di PM", "modalita' PM" o equivalenti.
+>
+> Questo file resta come:
+> - **Esempio formativo** — capire la struttura di un buon prompt PM per personalizzare la skill o il proprio workflow.
+> - **Fallback copia-incolla** — utile se la skill non e' caricata (es. sessione headless, ambiente senza skill, debug del comportamento).
+>
+> Non viene copiato automaticamente nel progetto target. Consultalo nel template.
 >
 > **Riferimenti nel manuale**: sez. 1.8 (pattern PM + Operative), sez. 2.13 (checklist wave), T.12 (PM nel team).
 

@@ -1,0 +1,8 @@
+{
+  "version": "1.9.0",
+  "installed_at": null,
+  "skill_level": "user",
+  "modules_enabled": ["coproduzione", "cheatsheet", "code_reviewer", "validate_script", "ci_workflow"],
+  "last_update_check": "2026-05-29T07:09:29Z",
+  "snoozed_until_version": null
+}

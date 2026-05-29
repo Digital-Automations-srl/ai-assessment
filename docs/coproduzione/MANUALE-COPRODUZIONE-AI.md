@@ -137,6 +137,7 @@ git branch -d claude/feature-email-validation
 - [2.14 Template sessione di test](#214-template-sessione-di-test)
 - [2.15 Direttive per l'AI](#215-direttive-per-lai)
 - [2.16 Esempio end-to-end: una wave completa](#216-esempio-end-to-end-una-wave-completa)
+- [2.17 Mantenere il manuale aggiornato](#217-mantenere-il-manuale-aggiornato)
 
 ### Parte 4: Riferimenti
 - [4.1 Anti-pattern documentati](#41-anti-pattern-documentati)
@@ -308,6 +309,7 @@ Claude Code ha accesso al filesystem del tuo progetto. Proteggi le credenziali:
 - **`.env` e file di configurazione**: Claude puo' leggerli se necessario per il contesto, ma non li invia intenzionalmente a terzi. Tienili comunque nel `.gitignore`
 - **API key e secret**: non committarle mai. Usa variabili d'ambiente
 - **File `.claude/settings.local.json`**: configurazione personale, gitignored per default
+- **Pre-commit scanning**: il template `template/hooks/pre-commit.sh` blocca il commit se rileva segreti. Usa [gitleaks](https://github.com/gitleaks/gitleaks) se installato (regole community sempre aggiornate per HF, Anthropic, OpenAI, GitHub, Slack, ecc.), altrimenti fa fallback su una regex baseline. Installa con `brew install gitleaks` (o equivalente)
 
 ### Checklist sicurezza iniziale
 
@@ -748,6 +750,8 @@ Una sessione dedicata alla pianificazione e al coordinamento:
 - **NON modifica codice direttamente** — pianifica, non implementa
 
 > **Modello consigliato**: Opus per la sessione PM (ragionamento strategico, visione d'insieme).
+
+> **Come avviarla**: la skill `sessione-pm` e' una **dipendenza esterna versionata** (repo `git@github.com:edoitaly/sessione-pm.git`, privato GitHub). Il setup la installa via clone + symlink in `~/.claude/skills/sessione-pm/`, cosi' vale per tutti i progetti presenti e futuri e si aggiorna con un singolo `cd ~/Developer/sessione-pm && git pull`. Apri Claude Code e digita "avvia una sessione di PM" (o "modalita' PM"): la skill carica il workflow PM completo (diagnosi stato, checklist salute, report d'apertura, regole di delega/verifica). Per personalizzare sponsor, deadline e quality gate specifici, copia `template/pm-mode.md` → `.claude/rules/pm-mode.md` e compila i placeholder — la skill lo carica automaticamente.
 
 ### Sessioni Operative
 
@@ -1930,7 +1934,7 @@ Fermati **SEMPRE** se:
 - Non sei sicuro di capire il requisito
 - Stai per modificare auth, pagamento, o dati personali senza review esplicita
 
-> **File AI-only**: le regole operative di questa sezione sono estratte in forma condensata nel file `coproduzione.md` (~130 righe), da copiare in `.claude/rules/` del tuo progetto. Quel file e' pensato per essere incluso nel contesto AI delle sessioni (vedi [ISTRUZIONI.md](ISTRUZIONI.md)).
+> **File AI-only**: le regole operative di questa sezione sono estratte in forma condensata nel file `coproduzione.md` (~155 righe), da copiare in `.claude/rules/` del tuo progetto. Quel file e' pensato per essere incluso nel contesto AI delle sessioni (vedi [ISTRUZIONI.md](ISTRUZIONI.md)).
 
 ---
 
@@ -2084,6 +2088,40 @@ $ git branch -d claude/wave2-a claude/wave2-b
 4. **Pre-flight check** sui file coinvolti previene conflitti
 
 > Questo e' un caso semplice con 2 task. Per wave con 3+ task paralleli o dipendenze tra task, vedi la [checklist operativa](#213-checklist-operativa-per-wave).
+
+---
+
+## 2.17 Mantenere il manuale aggiornato
+
+Il manuale evolve: best practice nuove, fix, capability aggiuntive. Dalla v1.9 esiste un meccanismo di update integrato. La versione installata in un progetto e' tracciata nel marker `.claude/.coproduzione-version` (JSON, committato — schema in `template/coproduzione-version.SCHEMA.md`); l'upstream e' `Digital-Automations-srl/manuale-coproduzione` su GitHub.
+
+### Quattro canali di scoperta
+
+1. **Hook periodico settimanale (opt-in)** — `~/.claude/hooks/coproduzione-update-check.sh` controlla 1x/settimana, fail-silent se offline, segnala disponibilita' update via system reminder. Si attiva durante il setup (vedi `template/SETUP-PROMPT.md`) registrandolo in `~/.claude/settings.json`.
+2. **Check on-first-PM-session** — la skill `sessione-pm` (v1.9+) esegue il check come parte della diagnosi iniziale e include l'eventuale update tra i finding.
+3. **Comando manuale** — pronuncia "aggiorna manuale di co-produzione" (o "controlla aggiornamenti coproduzione") per invocare la skill `aggiorna-coproduzione`.
+4. **Riga statica in CLAUDE.md** — raccomandato: includi nella sezione "Workflow Co-Produzione" la versione installata e il comando per aggiornare. Cosi' Claude lo vede ad ogni sessione, anche senza skill o hook attivi.
+
+### Come funziona l'apply (granularita' adattiva)
+
+| Tipo bump | Strategia | UX |
+|---|---|---|
+| **Patch** (X.Y.**Z**) | Auto-applicabile a tutti i moduli | Una sola conferma riassuntiva |
+| **Minor** (X.**Y**.0) | Per modulo | Checkbox per modulo (manuali / regole AI / tooling / agent / hook) |
+| **Major** (**X**.Y.0) | Per modulo + opt-in esplicito | Display obbligatorio di `MIGRATION-vX.md` prima di permettere l'apply |
+
+**Garanzie operative**:
+- **Backup obbligatorio** prima di ogni sovrascrittura (ultime 3 versioni conservate).
+- **3-way merge** per file canonici modificati manualmente.
+- **File personalizzabili mai sovrascritti**: `CLAUDE.md` del progetto, `.claude/rules/pm-mode.md`, `.github/workflows/ai-quality-gate.yml`, `.git/hooks/pre-commit`. Per questi vedi solo il diff upstream come suggerimento.
+- **Atomicita'**: il marker `.claude/.coproduzione-version` viene aggiornato per ultimo — se l'apply si interrompe a meta', il marker resta coerente.
+
+### Snooze e health-check
+
+- **Ignorare una versione**: "aggiorna-coproduzione snooze X.Y.Z" — la skill non segnalera' fino a una versione > X.Y.Z (campo `snoozed_until_version` nel marker).
+- **Health-check skill PM**: la stessa skill controlla anche se `sessione-pm` (repo esterno `edoitaly/sessione-pm`) ha update disponibili e suggerisce il comando per aggiornarla (`cd ~/Developer/sessione-pm && git pull`). La skill PM non viene mai aggiornata automaticamente dalla skill di update del manuale.
+
+> Per i dettagli operativi (edge case di rete, gestione skill user-level, format del marker), vedi `~/.claude/skills/aggiorna-coproduzione/SKILL.md`.
 
 ---
 

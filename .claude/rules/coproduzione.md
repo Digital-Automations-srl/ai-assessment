@@ -1,7 +1,8 @@
 # Regole di Co-Produzione AI
-<!-- v1.7 — Riferimento per gli umani: il manuale completo e' nel file MANUALE-COPRODUZIONE-AI
+<!-- v1.9.0 — Riferimento per gli umani: il manuale completo e' nel file MANUALE-COPRODUZIONE-AI
      (nella posizione scelta durante il setup). NON leggerlo durante le sessioni di lavoro,
      queste regole sono autosufficienti. -->
+<!-- coproduzione-version: 1.9.0 -->
 
 ---
 
@@ -110,6 +111,21 @@ Se stai ricevendo questo prompt in una **sessione operativa**: segui il prompt d
 - [ ] Build + lint passano
 - [ ] Sessione di test lanciata
 - [ ] CLAUDE.md aggiornato con note dalla wave
+
+---
+
+## Checklist di Chiusura Sessione
+
+Quando l'utente chiede di concludere la sessione ("chiudo", "concludi", "stop", "fine"), esegui questi passi PRIMA di rispondere — NON improvvisare un riepilogo:
+
+- [ ] Working tree pulito: committa tutto il completato (la regola 7 sopra autorizza gia' il commit di sotto-task — non chiedere permesso ulteriore)
+- [ ] Build/lint/test passano sul branch corrente
+- [ ] Push su remote se opportuno
+- [ ] Salva contesto rilevante (`/remember` o handoff in `.claude/questions/`)
+- [ ] Rinomina sessione con `/rename` (descrittivo)
+- [ ] Pulizia worktree se mergiato: `git worktree remove <nome>`
+
+Concludere con working tree sporco o test rossi viola la procedura. Se l'utente vuole davvero chiudere con WIP, lo dichiara esplicitamente.
 
 ---
 
