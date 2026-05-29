@@ -3,7 +3,11 @@ import nodemailer from "nodemailer";
 import sharp from "sharp";
 import { buildLeadEmail, buildInternalEmail } from "@/lib/email";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { buildSubmissionFields, type QuizAnswerMap } from "@/lib/submission-record";
+import {
+  buildSubmissionFields,
+  sanitizeBehavior,
+  type QuizAnswerMap,
+} from "@/lib/submission-record";
 import { generateSpiderChartSVG } from "@/lib/spider-chart-svg";
 import { getTargetScore } from "@/lib/scoring";
 import {
@@ -83,13 +87,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { lead, results, quizAnswers, submissionToken, utm } = body as {
-      lead: LeadData;
-      results: QuizResults;
-      quizAnswers?: QuizAnswerMap;
-      submissionToken?: string;
-      utm?: UtmParams;
-    };
+    const { lead, results, quizAnswers, submissionToken, utm, behavior } =
+      body as {
+        lead: LeadData;
+        results: QuizResults;
+        quizAnswers?: QuizAnswerMap;
+        submissionToken?: string;
+        utm?: UtmParams;
+        behavior?: unknown;
+      };
 
     // --- Validation ---
     if (!lead || !results) {
@@ -222,6 +228,7 @@ export async function POST(request: NextRequest) {
         const fields = {
           ...buildSubmissionFields(results, quizAnswers),
           ...utmColumns(utm),
+          behavior: sanitizeBehavior(behavior),
           nome: lead.nome,
           cognome: lead.cognome,
           email: lead.email,

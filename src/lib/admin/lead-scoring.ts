@@ -3,7 +3,7 @@
 // Le funzioni qui dentro non leggono il DB: ricevono i campi grezzi e calcolano.
 
 import { getLevel, getTargetScore } from "@/lib/scoring";
-import type { AxisKey } from "@/lib/types";
+import type { AxisKey, BehaviorSignals } from "@/lib/types";
 
 export type LeadTier = "hot" | "warm" | "cold";
 
@@ -31,6 +31,37 @@ export interface TierInput {
   overall_score: number | null;
   email: string | null;
   consenso_marketing: boolean | null;
+  // DATA-2: usato SOLO come tie-break del ranking (non cambia la classe tier).
+  behavior?: BehaviorSignals | null;
+}
+
+// Peso massimo del tie-break comportamentale sul `score` di ranking. Deve
+// restare < 0.1 (granularita' degli overall_score, arrotondati a 1 decimale)
+// cosi' l'engagement separa SOLO lead a parita' di tier e overall, senza mai
+// scavalcare una differenza reale di maturita'.
+const ENGAGEMENT_TIEBREAK_WEIGHT = 0.09;
+
+/**
+ * Engagement 0..1 dai segnali comportamentali. Neutro (0) se behavior assente
+ * (lead storici → ordinati dopo, a parita' di overall). Guidato dal tempo
+ * speso (un completamento <45s e' click-through → 0) e penalizzato dalla quota
+ * di risposte "Non so".
+ */
+export function behaviorEngagement(
+  behavior: BehaviorSignals | null | undefined
+): number {
+  if (!behavior) return 0;
+  const t =
+    typeof behavior.totalTimeMs === "number" && behavior.totalTimeMs > 0
+      ? behavior.totalTimeMs
+      : 0;
+  // 0 a <=45s (click-through), sale linearmente fino a 1 a >=300s.
+  const timeScore =
+    t <= 45_000 ? 0 : Math.min(1, (t - 45_000) / (300_000 - 45_000));
+  const answered = behavior.answeredCount > 0 ? behavior.answeredCount : 0;
+  const nonSoRatio = answered > 0 ? Math.min(1, behavior.nonSoCount / answered) : 0;
+  const e = timeScore * (1 - nonSoRatio);
+  return Math.max(0, Math.min(1, e));
 }
 
 export interface TierResult {
@@ -60,15 +91,15 @@ export function computeLeadTier(row: TierInput): TierResult {
   // COLD: requisiti non soddisfatti alla radice.
   if (!isCompleted) {
     reasons.push("Record anonimo (form non inviato)");
-    return tierResult("cold", score, reasons);
+    return tierResult("cold", score, reasons, row.behavior);
   }
   if (!hasEmail) {
     reasons.push("Email assente: non contattabile");
-    return tierResult("cold", score, reasons);
+    return tierResult("cold", score, reasons, row.behavior);
   }
   if (score < TIER_THRESHOLDS.warmMin) {
     reasons.push(`Maturita' bassa (${score.toFixed(1)} < ${TIER_THRESHOLDS.warmMin})`);
-    return tierResult("cold", score, reasons);
+    return tierResult("cold", score, reasons, row.behavior);
   }
 
   // A questo punto: completed, con email, score>=2.5.
@@ -76,22 +107,29 @@ export function computeLeadTier(row: TierInput): TierResult {
     if (row.consenso_marketing === true) {
       reasons.push(`Maturita' alta (${score.toFixed(1)})`);
       reasons.push("Consenso marketing presente");
-      return tierResult("hot", score, reasons);
+      return tierResult("hot", score, reasons, row.behavior);
     }
     // Tutti i requisiti HOT ma senza consenso marketing → WARM.
     reasons.push(`Maturita' alta (${score.toFixed(1)})`);
     reasons.push("Manca consenso marketing");
-    return tierResult("warm", score, reasons);
+    return tierResult("warm", score, reasons, row.behavior);
   }
 
   // score in [2.5, 3.49] con email → WARM.
   reasons.push(`Maturita' media (${score.toFixed(1)})`);
-  return tierResult("warm", score, reasons);
+  return tierResult("warm", score, reasons, row.behavior);
 }
 
-function tierResult(tier: LeadTier, overall: number, reasons: string[]): TierResult {
+function tierResult(
+  tier: LeadTier,
+  overall: number,
+  reasons: string[],
+  behavior?: BehaviorSignals | null
+): TierResult {
   const rank = tier === "hot" ? 2000 : tier === "warm" ? 1000 : 0;
-  return { tier, score: rank + overall, reasons };
+  // Tie-break comportamentale: separa lead a parita' di tier e overall.
+  const engagement = behaviorEngagement(behavior) * ENGAGEMENT_TIEBREAK_WEIGHT;
+  return { tier, score: rank + overall + engagement, reasons };
 }
 
 // Mappatura tier → predicati SQL grezzi (per filtrare server-side senza

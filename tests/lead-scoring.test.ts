@@ -8,8 +8,21 @@ import {
   weakestAxis,
   daysSince,
   gapColor,
+  behaviorEngagement,
   TIER_THRESHOLDS,
 } from "@/lib/admin/lead-scoring";
+import type { BehaviorSignals } from "@/lib/types";
+
+function behavior(o: Partial<BehaviorSignals>): BehaviorSignals {
+  return {
+    totalTimeMs: null,
+    answeredCount: 30,
+    skippedCount: 0,
+    nonSoCount: 0,
+    backClicks: 0,
+    ...o,
+  };
+}
 
 describe("computeLeadTier", () => {
   it("HOT: completed, score>=3.5, email, consenso marketing", () => {
@@ -253,5 +266,73 @@ describe("gapColor", () => {
     expect(gapColor(0.5)).toBe("#16a34a");
     expect(gapColor(1.5)).toBe("#E09900");
     expect(gapColor(3)).toBe("#dc2626");
+  });
+});
+
+describe("behaviorEngagement (DATA-2)", () => {
+  it("0 se behavior assente", () => {
+    expect(behaviorEngagement(null)).toBe(0);
+    expect(behaviorEngagement(undefined)).toBe(0);
+  });
+  it("0 per completamento click-through (<=45s)", () => {
+    expect(behaviorEngagement(behavior({ totalTimeMs: 20_000 }))).toBe(0);
+    expect(behaviorEngagement(behavior({ totalTimeMs: 45_000 }))).toBe(0);
+  });
+  it("~1 per tempo congruo (>=300s) senza Non so", () => {
+    expect(behaviorEngagement(behavior({ totalTimeMs: 300_000 }))).toBeCloseTo(1, 5);
+    expect(behaviorEngagement(behavior({ totalTimeMs: 600_000 }))).toBe(1);
+  });
+  it("monotono crescente nel tempo", () => {
+    const a = behaviorEngagement(behavior({ totalTimeMs: 100_000 }));
+    const b = behaviorEngagement(behavior({ totalTimeMs: 200_000 }));
+    expect(b).toBeGreaterThan(a);
+  });
+  it("penalizza la quota di risposte Non so", () => {
+    const senza = behaviorEngagement(behavior({ totalTimeMs: 300_000, nonSoCount: 0 }));
+    const con = behaviorEngagement(
+      behavior({ totalTimeMs: 300_000, nonSoCount: 15, answeredCount: 30 })
+    );
+    expect(con).toBeLessThan(senza);
+    expect(con).toBeCloseTo(0.5, 5);
+  });
+});
+
+describe("computeLeadTier — tie-break comportamentale (DATA-2)", () => {
+  const baseHot = {
+    status: "completed",
+    overall_score: 3.6,
+    email: "a@b.it",
+    consenso_marketing: true,
+  } as const;
+
+  it("a parita' di tier+overall, piu' engagement → score maggiore", () => {
+    const engaged = computeLeadTier({ ...baseHot, behavior: behavior({ totalTimeMs: 400_000 }) });
+    const fast = computeLeadTier({ ...baseHot, behavior: behavior({ totalTimeMs: 20_000 }) });
+    const none = computeLeadTier({ ...baseHot });
+    expect(engaged.tier).toBe("hot");
+    expect(engaged.score).toBeGreaterThan(fast.score);
+    expect(fast.score).toBeCloseTo(none.score, 5); // engagement 0 == nessun behavior
+  });
+
+  it("il tie-break NON scavalca una differenza reale di overall (<0.1)", () => {
+    // overall 3.6 senza engagement vs 3.5 con engagement massimo: il maturo vince.
+    const piuMaturo = computeLeadTier({ ...baseHot, overall_score: 3.6 });
+    const menoMaturoEngaged = computeLeadTier({
+      ...baseHot,
+      overall_score: 3.5,
+      behavior: behavior({ totalTimeMs: 600_000 }),
+    });
+    expect(piuMaturo.score).toBeGreaterThan(menoMaturoEngaged.score);
+  });
+
+  it("il tie-break non cambia la classe di tier", () => {
+    const r = computeLeadTier({
+      status: "completed",
+      overall_score: 1.0,
+      email: "a@b.it",
+      consenso_marketing: true,
+      behavior: behavior({ totalTimeMs: 600_000 }),
+    });
+    expect(r.tier).toBe("cold"); // overall basso resta cold malgrado l'engagement
   });
 });

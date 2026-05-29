@@ -108,6 +108,19 @@ function buildRow(i: number): SubmissionRow {
   const utmMedium = hasUtm ? pick(r, ["cpc", "social", "email", "organic"]) : null;
   const utmCampaign = hasUtm ? pick(r, ["ai-readiness", "pmi-2026", "webinar"]) : null;
 
+  // DATA-2: behavior finto (tempo totale + back-click variabili; ~metà degli
+  // anonimi senza behavior → null, come gli storici).
+  const behavior =
+    anonymous && r() < 0.5
+      ? null
+      : {
+          totalTimeMs: Math.round((30 + r() * 540) * 1000), // 30s..570s
+          answeredCount: 30,
+          skippedCount: 0,
+          nonSoCount: 0,
+          backClicks: Math.floor(r() * 4),
+        };
+
   return {
     id: `mock-${String(i).padStart(3, "0")}`,
     created_at: created.toISOString(),
@@ -127,6 +140,7 @@ function buildRow(i: number): SubmissionRow {
     answers: { X1: settore, X2: dipendenti, X3: ruolo },
     compliance: complianceFor(r, overall),
     quiz_answers: null,
+    behavior,
     submission_token: null,
     consenso: anonymous ? null : true,
     consenso_marketing: anonymous ? null : consensoMkt,

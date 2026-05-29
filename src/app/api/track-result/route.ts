@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { buildSubmissionFields, type QuizAnswerMap } from "@/lib/submission-record";
+import {
+  buildSubmissionFields,
+  sanitizeBehavior,
+  type QuizAnswerMap,
+} from "@/lib/submission-record";
 import {
   logEvent,
   newRequestId,
@@ -19,11 +23,12 @@ export async function POST(request: NextRequest) {
   const requestId = newRequestId();
   try {
     const body = await request.json();
-    const { submissionToken, results, quizAnswers, utm } = body as {
+    const { submissionToken, results, quizAnswers, utm, behavior } = body as {
       submissionToken?: string;
       results?: QuizResults;
       quizAnswers?: QuizAnswerMap;
       utm?: UtmParams;
+      behavior?: unknown;
     };
 
     // --- Validazione minima (nessun PII atteso qui) ---
@@ -65,6 +70,7 @@ export async function POST(request: NextRequest) {
         status: "anonymous",
         ...buildSubmissionFields(results, quizAnswers),
         ...utmColumns(utm),
+        behavior: sanitizeBehavior(behavior),
       },
       { onConflict: "submission_token", ignoreDuplicates: true }
     );

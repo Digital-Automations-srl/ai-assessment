@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { CONTEXT_QUESTIONS, AXES } from "@/lib/quiz-data";
 import { calculateResults } from "@/lib/scoring";
 import { pickUtm, type UtmParams } from "@/lib/utm";
+import { buildBehavior } from "@/lib/behavior";
 import type { LeadData } from "@/lib/types";
 import Header from "@/components/quiz/Header";
 import Landing from "@/components/quiz/Landing";
@@ -51,6 +52,20 @@ export default function QuizPage() {
     utmRef.current = pickUtm(new URLSearchParams(window.location.search));
   }, []);
 
+  // DATA-2: segnali comportamentali. startTime = quiz_started (uscita landing);
+  // backClicks = click "Indietro" totali. buildBehavior li combina con i conteggi.
+  const startTimeRef = useRef<number | null>(null);
+  const backClicksRef = useRef(0);
+  const collectBehavior = useCallback(
+    () =>
+      buildBehavior({
+        quizAnswers,
+        totalTimeMs: startTimeRef.current ? Date.now() - startTimeRef.current : null,
+        backClicks: backClicksRef.current,
+      }),
+    [quizAnswers]
+  );
+
   const currentAxis = AXES[axisIndex];
 
   const computeResults = useCallback(() => {
@@ -78,6 +93,7 @@ export default function QuizPage() {
         submissionToken: token,
         quizAnswers,
         utm: utmRef.current,
+        behavior: collectBehavior(),
         results: {
           contextAnswers,
           axisResults: r.axisResults,
@@ -89,7 +105,7 @@ export default function QuizPage() {
     }).catch(() => {
       // Tracking anonimo best-effort: non deve mai bloccare la UX.
     });
-  }, [step, computeResults, quizAnswers, contextAnswers]);
+  }, [step, computeResults, collectBehavior, quizAnswers, contextAnswers]);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "instant" });
 
@@ -108,6 +124,7 @@ export default function QuizPage() {
   };
 
   const handleContextBack = () => {
+    backClicksRef.current += 1;
     setStep("instructions");
     scrollToTop();
   };
@@ -134,6 +151,7 @@ export default function QuizPage() {
   };
 
   const handleQuizBack = () => {
+    backClicksRef.current += 1;
     if (axisIndex > 0) {
       setAxisIndex((i) => i - 1);
     } else {
@@ -157,6 +175,7 @@ export default function QuizPage() {
           submissionToken: submissionTokenRef.current,
           quizAnswers,
           utm: utmRef.current,
+          behavior: collectBehavior(),
           results: {
             contextAnswers,
             axisResults: r.axisResults,
@@ -187,6 +206,7 @@ export default function QuizPage() {
         {step === "landing" && (
           <Landing
             onStart={() => {
+              startTimeRef.current = Date.now();
               setStep("instructions");
               scrollToTop();
             }}
