@@ -27,6 +27,9 @@
 ## Backlog prioritizzato
 - 📋 **Matrice opportunità** (fattibilità/impatto/fit, 20 voci, piano a 2 wave: Wave 1 tecnica interna · Wave 2 opzionale tool esterni/proattivo cliente): **`docs/IMPROVEMENT-MATRIX.md`**. Fondante: **OBS-1** (observability — causa-radice dell'incidente pausa).
 
+## Sessioni operative aperte (VERIFICARE per prime)
+- 🔧 **Wave 1 — tecnica** (chip autonomo, branch `claude/wave1-tech`, worktree isolata `/Users/edoardo/Developer/.AI-Assessment-wt/wave1-tech`): implementa OBS-1, SEC-1/2/3, CODE-1/2/3, DATA-1/2, GROW-1 (struttura: interazioni solo a inizio/fine). **NON ancora mergiata.** Al ritorno: leggi la review finale del chip → fai le **azioni manuali** che riporta (applicare `supabase/migrations/*_wave1.sql` + SQL drop policy RLS nel SQL Editor Supabase; aggiungere `ADMIN_SESSION_SECRET` su Vercel + `.env.local`) → poi **merge `claude/wave1-tech` → main** con build/lint/test verdi + smoke prima del push prod. `PROD-1` rinviato a dopo i dati di funnel di GROW-1.
+
 ## Follow-up aperti
 - Verificare `/admin` in **produzione** (login con la password **intera**, incluso `#`).
 - **Vercel**: confermare `ADMIN_PASSWORD` = valore completo (Vercel letterale; in locale `.env.local` va quotato per via del `#`).
