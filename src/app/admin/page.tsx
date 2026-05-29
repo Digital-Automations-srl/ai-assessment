@@ -123,7 +123,7 @@ export default async function AdminPage({
   return (
     <>
       <AdminNav />
-      <main className="mx-auto max-w-7xl px-4 py-6">
+      <main className="w-full px-4 py-6 lg:px-6">
         <h1 className="mb-4 text-xl font-extrabold" style={{ color: "#004172" }}>
           Assessment ricevuti
         </h1>
