@@ -82,4 +82,9 @@
 ### Decisione sponsor + lancio (sera)
 - Sponsor: **fare tutto insieme** — teaser + eventi + GROW-3 (PDF). Misura **pre/post** su R1 (no A/B: traffico basso lo rende impraticabile; annotare la data di rilascio).
 - **GROW-3** rilanciato con miglioria tecnica: generazione PDF **client-side** (`PDFDownloadLink`/`usePDF`) → niente route serverless, zero sovrapposizione di file con la Fase 0. PRD aggiornato.
-- **2 chip lanciati** in worktree isolate: "Funnel Fase 0" (`docs/specs/FUNNEL-FASE0_PRD.md`) e "GROW-3 PDF" (`docs/specs/GROW-3_PRD.md`). Nessuno dei due deploya/mergia: review + merge sequenziale a carico della prossima sessione PM. PROD-3 resta in attesa (stessa dipendenza-dati).
+- **2 chip lanciati** in worktree isolate: "Funnel Fase 0" e "GROW-3 PDF".
+
+### Esito dei 2 chip (sera tardi)
+- **GROW-3 PDF — ABBANDONATO**: sponsor ha bloccato la sessione (PDF troppo complesso, rinuncia). Nessuna traccia git (né branch né worktree). Pulizia: rimosso `docs/specs/GROW-3_PRD.md`, GROW-3 segnato abbandonato in matrice/handoff. Eventuale ripensamento futuro: servizio esterno HTML→PDF anziché react-pdf.
+- **Funnel Fase 0 — CONCLUSA e VERIFICATA in PM**: branch `claude/funnel-fase0` (pushato), 3 commit. Gate eseguito in PM nella worktree: build ok, lint pulito, **test 175/175**. Diff fedele al PRD (scorecard gratuito intatto, `Report.tsx` non toccato, `pagehide` per l'abbandono, `trackOnce` dedup). Handoff dettagliato in `.claude/questions/FUNNEL-FASE0_HANDOFF.md`. **Decisione aperta** prima del merge: "rischi di conformità" = aree non-verdi (rosse+gialle) vs sole-rosse (1-liner in `page.tsx`). **Merge in attesa di OK sponsor** (merge→deploy = avvio del confronto pre/post su R1).
+- 🧹 Igiene: `.claude/worktrees/` aggiunto a `.gitignore`.

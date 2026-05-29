@@ -34,10 +34,11 @@
   - **PROD-1** (quiz inline): rinviato a *dopo* i dati di funnel di GROW-1.
   - **Wave 2** (opzionale) — decisioni 2026-05-29: ⛔ **INFRA-3 BLOCCATO** (serve accesso AWS via ufficio tecnico); ⏸️ **PROD-3 IN ATTESA** dati funnel + consenso. Restano: GROW-2 nurturing Encharge, GROW-6 CRM/sync, PROD-2 consenso/GDPR, GROW-4 benchmark, GROW-5 i18n.
 
-## Sessioni operative lanciate (VERIFICARE per prime) — 2 chip 2026-05-29
-- 🔧 **Funnel Fase 0** (PRD `docs/specs/FUNNEL-FASE0_PRD.md`): teaser di curiosità sui risultati (NON amputa lo scorecard) + eventi diagnostici `get_report_clicked`/`results_scroll_50/90`/`lead_form_abandoned`. Worktree isolata. NON deployato/mergiato dal chip.
-- 🔧 **GROW-3 PDF** (PRD `docs/specs/GROW-3_PRD.md`): bottone "Scarica PDF" sul report, react-pdf **client-side**. Worktree isolata. NON deployato/mergiato dal chip.
-- Al ritorno: leggere i 2 handoff → gate (build/lint/test + smoke) → review visiva sponsor → **merge sequenziale** (file per lo più disgiunti: Fase 0 = results/lead-form/page/plausible; GROW-3 = Report.tsx + componente PDF). Analisi funnel di riferimento: `docs/FUNNEL-GATING-ANALYSIS.md`. Misura **pre/post** su R1 (annotare data di rilascio al merge).
+## Sessioni operative — esito 2026-05-29
+- 🟢 **Funnel Fase 0** (branch `claude/funnel-fase0`, pushato): **VERIFICATA in PM** — build/lint ok, test **175/175**, diff fedele (scorecard intatto, `Report.tsx` non toccato). Handoff: `.claude/questions/FUNNEL-FASE0_HANDOFF.md` (nel branch). **Pronta al merge** (manca solo l'OK sponsor sul merge→deploy + scelta su come contare i "rischi"). Worktree: `.claude/worktrees/funnel-fase0` (rimuovere dopo il merge).
+  - ⚙️ **Decisione aperta**: il teaser conta come "rischi di conformità" le aree **non verdi (rosse+gialle)**; per sole-rosse è un 1-liner in `page.tsx` (`c.color === "red"`).
+- ❌ **GROW-3 PDF**: **ABBANDONATO** (PDF troppo complesso; sponsor ha bloccato la sessione). Nessun branch/worktree/residuo git. PRD rimosso. Vedi matrice per eventuale ripensamento (servizio esterno HTML→PDF).
+- 🧹 Igiene: aggiunto `.claude/worktrees/` a `.gitignore` (le worktree dei chip non devono finire nello status di main).
 
 ## Sessioni operative aperte
 - ✅ Nessuna. Wave 1 mergiata e branch/worktree ripuliti (resta solo `main`).
