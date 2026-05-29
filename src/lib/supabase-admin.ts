@@ -1,21 +1,21 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Server-only Supabase client backed by the SERVICE ROLE key.
-// NON deve mai essere importato in un componente client: la service role
-// bypassa le RLS e ha pieni poteri sul DB. Usato solo dalle route API
-// (`/api/send-report`, `/api/track-result`) per le scritture.
+// Server-only Supabase client backed by the SECRET key (formato moderno
+// `sb_secret_...`, rimpiazza la legacy service_role). NON deve mai essere
+// importato in un componente client: ha pieni poteri sul DB e bypassa le RLS.
+// Usato solo dalle route API (`/api/send-report`, `/api/track-result`) per le scritture.
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const secretKey = process.env.SUPABASE_SECRET_KEY;
 
-if (!supabaseUrl || !serviceRoleKey) {
+if (!supabaseUrl || !secretKey) {
   console.warn(
-    "[supabase-admin] Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY"
+    "[supabase-admin] Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY"
   );
 }
 
 export const supabaseAdmin =
-  supabaseUrl && serviceRoleKey
-    ? createClient(supabaseUrl, serviceRoleKey, {
+  supabaseUrl && secretKey
+    ? createClient(supabaseUrl, secretKey, {
         auth: { persistSession: false, autoRefreshToken: false },
       })
     : null;
