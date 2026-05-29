@@ -5,7 +5,8 @@
  */
 
 import opentype from "opentype.js";
-import { INTER_FONT_BASE64 } from "./font-data";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import type { AxisKey } from "./types";
 
 const AXES_ORDER: AxisKey[] = [
@@ -26,12 +27,23 @@ const DA_NAVY = "#004172";
 const DA_BLUE = "#016FC0";
 const DA_AMBER = "#E09900";
 
-// Parse font from embedded base64 (no filesystem needed)
+// Font caricato ON-DEMAND da file binario (CODE-1). Prima era 1.1MB di base64
+// embeddato in src/lib/font-data.ts → deottimizzava il bundle. Ora il .ttf vive
+// in src/assets/ e viene incluso nella function serverless via next.config
+// `outputFileTracingIncludes` ("/api/send-report" → ./src/assets/**). Il parse
+// e' cache-ato in-process dopo la prima lettura.
+const FONT_PATH = path.join(process.cwd(), "src", "assets", "Inter-Variable.ttf");
 let cachedFont: opentype.Font | null = null;
 function getFont(): opentype.Font {
   if (cachedFont) return cachedFont;
-  const binary = Buffer.from(INTER_FONT_BASE64, "base64");
-  cachedFont = opentype.parse(binary.buffer as ArrayBuffer);
+  const buf = readFileSync(FONT_PATH);
+  // Passa esattamente i byte del file (slice su byteOffset/byteLength) come
+  // ArrayBuffer a opentype.parse.
+  const ab = buf.buffer.slice(
+    buf.byteOffset,
+    buf.byteOffset + buf.byteLength
+  ) as ArrayBuffer;
+  cachedFont = opentype.parse(ab);
   return cachedFont;
 }
 
