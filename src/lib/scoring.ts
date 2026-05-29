@@ -210,6 +210,12 @@ const COMPLIANCE_AREAS: ComplianceAreaDef[] = [
   },
 ];
 
+// Nomi esatti delle 7 aree compliance, in ordine canonico. Esportato per le
+// aggregazioni admin (heatmap di mercato) cosi' la fonte resta una sola.
+export const COMPLIANCE_AREA_NAMES: string[] = COMPLIANCE_AREAS.map(
+  (a) => a.name
+);
+
 function calculateCompliance(
   answers: Record<string, number>
 ): ComplianceResult[] {
