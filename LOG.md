@@ -77,4 +77,9 @@
 ### Wave 2 — decisioni e analisi
 - **INFRA-3** ⛔ bloccato (serve accesso AWS via ufficio tecnico). **PROD-3** ⏸️ in attesa dati funnel + consenso.
 - **GROW-3** (report PDF, solo-PDF): PRD scritto (`docs/specs/GROW-3_PRD.md`), motore **@react-pdf/renderer** (analisi stabilità/fedeltà su Vercel serverless), delivery = bottone download sul report. Chip lanciato e poi **annullato dallo sponsor**; messo **IN PAUSA** per rivalutarlo dopo la decisione sul funnel (anche se tecnicamente indipendente).
-- **Analisi funnel results→form** (`docs/FUNNEL-GATING-ANALYSIS.md`, 3 lenti CRO/Trust/Dati): la pagina risultati svela già lo scorecard completo, ma il report è **già gated**. Verdetto convergente: **non amputare** i risultati; **Fase 0** = teaser di curiosità + eventi diagnostici (`get_report_clicked`, `results_scroll`, `lead_form_abandoned`) → 1-2 settimane dati → eventuale A/B (primaria `lead_submitted/results_viewed`, guard-rail qualità lead). Tema unico con PROD-3. **Decisione funnel da prendere** prima di rilanciare GROW-3.
+- **Analisi funnel results→form** (`docs/FUNNEL-GATING-ANALYSIS.md`, 3 lenti CRO/Trust/Dati): la pagina risultati svela già lo scorecard completo, ma il report è **già gated**. Verdetto convergente: **non amputare** i risultati; **Fase 0** = teaser di curiosità + eventi diagnostici (`get_report_clicked`, `results_scroll`, `lead_form_abandoned`) → 1-2 settimane dati → eventuale A/B.
+
+### Decisione sponsor + lancio (sera)
+- Sponsor: **fare tutto insieme** — teaser + eventi + GROW-3 (PDF). Misura **pre/post** su R1 (no A/B: traffico basso lo rende impraticabile; annotare la data di rilascio).
+- **GROW-3** rilanciato con miglioria tecnica: generazione PDF **client-side** (`PDFDownloadLink`/`usePDF`) → niente route serverless, zero sovrapposizione di file con la Fase 0. PRD aggiornato.
+- **2 chip lanciati** in worktree isolate: "Funnel Fase 0" (`docs/specs/FUNNEL-FASE0_PRD.md`) e "GROW-3 PDF" (`docs/specs/GROW-3_PRD.md`). Nessuno dei due deploya/mergia: review + merge sequenziale a carico della prossima sessione PM. PROD-3 resta in attesa (stessa dipendenza-dati).

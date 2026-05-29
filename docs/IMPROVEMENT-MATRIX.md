@@ -53,8 +53,9 @@ Toccano integrazioni esterne (Encharge/CRM/AWS SES) o l'ingaggio proattivo del c
 **GROW-2** (nurturing Encharge) · **GROW-6** (CRM + sync) · **INFRA-3** (config AWS SES) · **GROW-3** (report condivisibile/marketing) · **PROD-3** (exit-intent capture + consenso) · **PROD-2** (consenso/GDPR — review legale) · **GROW-4** (benchmark pubblico) · **GROW-5** (i18n — strategico)
 
 #### Decisioni Wave 2 (2026-05-29 sera)
-- ⏸️ **GROW-3 — IN PAUSA** (solo-PDF, PRD pronto in `docs/specs/GROW-3_PRD.md`). Tecnicamente indipendente dall'analisi-funnel (il PDF è un value-add del report già gated), ma per scelta sponsor si rivaluta **dopo** aver deciso la direzione del funnel, in sequenza pulita.
-- 🔬 **Ottimizzazione funnel (results→form)** — nuovo tema da `docs/FUNNEL-GATING-ANALYSIS.md`: la pagina risultati svela già lo scorecard completo; il report è già gated. Raccomandazione: **non amputare**, ma **Fase 0** (teaser di curiosità sui risultati + eventi diagnostici `get_report_clicked`/`results_scroll`/`lead_form_abandoned`) → raccogliere 1-2 settimane → eventuale A/B. Stessa dipendenza-dati di **PROD-3**: decidere insieme.
+- 🔵 **GROW-3 — RILANCIATO** (solo-PDF, PRD `docs/specs/GROW-3_PRD.md`). Sponsor: fare tutto insieme. Miglioria tecnica: generazione **client-side** (`PDFDownloadLink`/`usePDF`) → niente route serverless, zero sovrapposizione di file con la Fase 0. Scope-guard: non tocca results/gate.
+- 🔵 **Funnel Fase 0 — LANCIATO** (PRD `docs/specs/FUNNEL-FASE0_PRD.md`): **teaser di curiosità** sui risultati (conteggio rischi compliance + asse più debole, senza amputare lo scorecard) + **eventi diagnostici** (`get_report_clicked`, `results_scroll_50/90`, `lead_form_abandoned`). Da `docs/FUNNEL-GATING-ANALYSIS.md` (verdetto: NON amputare i risultati).
+- 📏 **Misurazione**: no A/B (traffico basso); teaser a tutti, confronto **pre/post** su **R1** (già da GROW-1) + nuovi eventi. Annotare la data di rilascio. **PROD-3** resta in attesa, stessa dipendenza-dati.
 - ⛔ **INFRA-3 — BLOCCATO** (dipendenza esterna): non quick-win per noi, richiede **accesso AWS via ufficio tecnico** (config SES→SNS). Da girare all'ufficio tecnico quando si vuole procedere.
 - ⏸️ **PROD-3 — IN ATTESA DATI**: decidere *dopo* qualche giorno di funnel GROW-1 (quantificare il drop-off post-risultati) + decisione consenso/GDPR. Stessa logica del rinvio di PROD-1.
 

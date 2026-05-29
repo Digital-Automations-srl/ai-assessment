@@ -32,8 +32,12 @@
 - 📋 **Matrice opportunità**: **`docs/IMPROVEMENT-MATRIX.md`** (Wave 1 segnata ✅). Restano aperti:
   - ✅ **INFRA-2 CHIUSO**: passaggio a **Supabase Pro** (backup giornalieri + restore self-service; no auto-pausa) + OBS-1 già in prod. Residuo opzionale: dry-run una-tantum del restore.
   - **PROD-1** (quiz inline): rinviato a *dopo* i dati di funnel di GROW-1.
-  - **Wave 2** (opzionale) — decisioni 2026-05-29: ⏸️ **GROW-3 (report PDF) IN PAUSA** (PRD pronto `docs/specs/GROW-3_PRD.md`; indipendente ma rivalutato dopo la direzione funnel, scelta sponsor); ⛔ **INFRA-3 BLOCCATO** (serve accesso AWS via ufficio tecnico); ⏸️ **PROD-3 IN ATTESA** dati funnel + consenso. Restano: GROW-2 nurturing Encharge, GROW-6 CRM/sync, PROD-2 consenso/GDPR, GROW-4 benchmark, GROW-5 i18n.
-  - 🔬 **Ottimizzazione funnel (results→form)** — analisi completa in **`docs/FUNNEL-GATING-ANALYSIS.md`** (3 lenti). Verdetto: NON amputare i risultati; **Fase 0** = teaser di curiosità + eventi diagnostici, poi 1-2 settimane di dati, poi eventuale A/B. Tema unico con PROD-3 (stessa dipendenza-dati). **DECISIONE FUNNEL DA PRENDERE** prima di rilanciare GROW-3.
+  - **Wave 2** (opzionale) — decisioni 2026-05-29: ⛔ **INFRA-3 BLOCCATO** (serve accesso AWS via ufficio tecnico); ⏸️ **PROD-3 IN ATTESA** dati funnel + consenso. Restano: GROW-2 nurturing Encharge, GROW-6 CRM/sync, PROD-2 consenso/GDPR, GROW-4 benchmark, GROW-5 i18n.
+
+## Sessioni operative lanciate (VERIFICARE per prime) — 2 chip 2026-05-29
+- 🔧 **Funnel Fase 0** (PRD `docs/specs/FUNNEL-FASE0_PRD.md`): teaser di curiosità sui risultati (NON amputa lo scorecard) + eventi diagnostici `get_report_clicked`/`results_scroll_50/90`/`lead_form_abandoned`. Worktree isolata. NON deployato/mergiato dal chip.
+- 🔧 **GROW-3 PDF** (PRD `docs/specs/GROW-3_PRD.md`): bottone "Scarica PDF" sul report, react-pdf **client-side**. Worktree isolata. NON deployato/mergiato dal chip.
+- Al ritorno: leggere i 2 handoff → gate (build/lint/test + smoke) → review visiva sponsor → **merge sequenziale** (file per lo più disgiunti: Fase 0 = results/lead-form/page/plausible; GROW-3 = Report.tsx + componente PDF). Analisi funnel di riferimento: `docs/FUNNEL-GATING-ANALYSIS.md`. Misura **pre/post** su R1 (annotare data di rilascio al merge).
 
 ## Sessioni operative aperte
 - ✅ Nessuna. Wave 1 mergiata e branch/worktree ripuliti (resta solo `main`).
