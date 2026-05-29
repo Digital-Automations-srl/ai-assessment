@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { buildSubmissionFields, type QuizAnswerMap } from "@/lib/submission-record";
+import {
+  logEvent,
+  newRequestId,
+  recordFailure,
+  recordSuccess,
+} from "@/lib/observability";
 import type { QuizResults } from "@/lib/types";
 
 // Cattura ANONIMA allo step "results" (completamenti senza lead).
@@ -9,6 +15,7 @@ import type { QuizResults } from "@/lib/types";
 // generato dal client, che servira' poi a collegare il lead (UPDATE in
 // /api/send-report). Best-effort: un fallimento non deve bloccare la UX.
 export async function POST(request: NextRequest) {
+  const requestId = newRequestId();
   try {
     const body = await request.json();
     const { submissionToken, results, quizAnswers } = body as {
@@ -39,9 +46,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (!supabaseAdmin) {
-      console.warn(
-        "[track-result] Service role client non configurato: tracking anonimo saltato."
-      );
+      logEvent("track_result.upsert", "warn", {
+        requestId,
+        reason: "supabase_admin_unconfigured",
+      });
       // Non e' un errore lato client: il tracking anonimo e' best-effort.
       return NextResponse.json({ ok: false, skipped: true });
     }
@@ -59,16 +67,43 @@ export async function POST(request: NextRequest) {
     );
 
     if (error) {
-      console.error("[track-result] Insert error:", error.message);
+      // Stesso canale "db" di send-report: una serie di fallimenti qui alza il
+      // contatore consecutivo, cosi' l'alert del primo lead completato segnala
+      // un'outage gia' in corso. Nessuna email qui (tracking anonimo best-effort).
+      const failures = recordFailure("db");
+      logEvent("track_result.upsert", "error", {
+        requestId,
+        error: error.message,
+        consecutiveFailures: failures,
+      });
       // 200 ok:false → il client prosegue comunque (tracking best-effort).
       return NextResponse.json({ ok: false, error: error.message });
     }
 
+    // Verifica post-scrittura: con ignoreDuplicates l'upsert non ritorna la riga,
+    // quindi rileggiamo per token per confermare la persistenza.
+    const { data: verifyRow, error: verifyError } = await supabaseAdmin
+      .from("submissions")
+      .select("id")
+      .eq("submission_token", submissionToken)
+      .maybeSingle();
+    if (verifyError || !verifyRow) {
+      const failures = recordFailure("db");
+      logEvent("track_result.verify", "error", {
+        requestId,
+        error: verifyError?.message ?? "riga non trovata dopo upsert",
+        consecutiveFailures: failures,
+      });
+      return NextResponse.json({ ok: false, error: "verification_failed" });
+    }
+
+    recordSuccess("db");
+    logEvent("track_result.upsert", "ok", { requestId });
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("[track-result] Error:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred.";
+    logEvent("track_result.error", "error", { requestId, error: message });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
