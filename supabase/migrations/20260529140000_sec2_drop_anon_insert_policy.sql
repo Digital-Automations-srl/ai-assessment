@@ -36,7 +36,7 @@ begin
       and cmd = 'INSERT'
   loop
     execute format('drop policy if exists %I on public.submissions', pol.policyname);
-    raise notice 'SEC-2: dropped INSERT policy %% on public.submissions', pol.policyname;
+    raise notice 'SEC-2: dropped INSERT policy % on public.submissions', pol.policyname;
   end loop;
 end $$;
 
