@@ -52,6 +52,11 @@ Caveat: richiedono **approvazione** per regola co-produzione → migrazioni DB: 
 Toccano integrazioni esterne (Encharge/CRM/AWS SES) o l'ingaggio proattivo del cliente (outreach, cattura, asset marketing) o richiedono decisioni di business/legali.
 **GROW-2** (nurturing Encharge) · **GROW-6** (CRM + sync) · **INFRA-3** (config AWS SES) · **GROW-3** (report condivisibile/marketing) · **PROD-3** (exit-intent capture + consenso) · **PROD-2** (consenso/GDPR — review legale) · **GROW-4** (benchmark pubblico) · **GROW-5** (i18n — strategico)
 
+#### Decisioni Wave 2 (2026-05-29 sera)
+- 🔵 **GROW-3 — IN CORSO** (solo-PDF come primo passo), su ramo dedicato/worktree isolata per review prima del merge. Sinergia: ragno PNG (`spider-chart-svg.ts`) + scoring/compliance già pronti.
+- ⛔ **INFRA-3 — BLOCCATO** (dipendenza esterna): non quick-win per noi, richiede **accesso AWS via ufficio tecnico** (config SES→SNS). Da girare all'ufficio tecnico quando si vuole procedere.
+- ⏸️ **PROD-3 — IN ATTESA DATI**: decidere *dopo* qualche giorno di funnel GROW-1 (quantificare il drop-off post-risultati) + decisione consenso/GDPR. Stessa logica del rinvio di PROD-1.
+
 ## Sequenza consigliata
 1. **Prima ondata (costo-ore)**: GROW-1, SEC-1, SEC-2, CODE-1, SEC-3 + **OBS-1** (fondante).
 2. **Affidabilità dato**: INFRA-2.

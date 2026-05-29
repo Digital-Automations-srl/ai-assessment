@@ -32,7 +32,7 @@
 - 📋 **Matrice opportunità**: **`docs/IMPROVEMENT-MATRIX.md`** (Wave 1 segnata ✅). Restano aperti:
   - ✅ **INFRA-2 CHIUSO**: passaggio a **Supabase Pro** (backup giornalieri + restore self-service; no auto-pausa) + OBS-1 già in prod. Residuo opzionale: dry-run una-tantum del restore.
   - **PROD-1** (quiz inline): rinviato a *dopo* i dati di funnel di GROW-1.
-  - **Wave 2** (opzionale): GROW-2 nurturing Encharge, GROW-6 CRM/sync, INFRA-3 SES, GROW-3 report PDF, PROD-3 exit-intent, PROD-2 consenso/GDPR, GROW-4 benchmark, GROW-5 i18n.
+  - **Wave 2** (opzionale) — decisioni 2026-05-29: 🔵 **GROW-3 (report PDF) IN CORSO** su ramo dedicato/worktree isolata (solo-PDF primo passo); ⛔ **INFRA-3 BLOCCATO** (serve accesso AWS via ufficio tecnico — non quick-win per noi); ⏸️ **PROD-3 IN ATTESA** dei dati funnel GROW-1 + decisione consenso. Restano: GROW-2 nurturing Encharge, GROW-6 CRM/sync, PROD-2 consenso/GDPR, GROW-4 benchmark, GROW-5 i18n.
 
 ## Sessioni operative aperte
 - ✅ Nessuna. Wave 1 mergiata e branch/worktree ripuliti (resta solo `main`).
