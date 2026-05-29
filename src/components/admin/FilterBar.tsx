@@ -15,14 +15,23 @@ const inputCls = selectCls;
 
 // Preset "Segmenti commerciali" (US-2): mappano parametri querystring esistenti
 // + il parametro derivato `tier`. Click → applica, sostituendo i filtri.
+//
+// Due strategie di filtro, intenzionalmente diverse a seconda del segmento:
+//  - `tier` (hot/warm): metrica DERIVATA da computeLeadTier; il restringimento
+//    SQL e' parziale e viene raffinato in memoria (vedi IMPLEMENTATION_NOTES.md).
+//  - `status` (anonymous): colonna DB diretta. "Da ricontattare" = chi NON ha
+//    inviato il form, quindi e' una proprieta' di stato, non un tier. Filtrare
+//    per `tier:cold` sarebbe piu' ampio (include anche completati a maturita'
+//    bassa o senza email): qui vogliamo proprio i soli record anonimi.
 type Preset = {
   id: string;
   label: string;
   params: Partial<Record<string, string>>;
 };
 const PRESETS: Preset[] = [
-  { id: "hot", label: "🔥 Hot leads", params: { tier: "hot" } },
-  { id: "warm", label: "🟡 Warm", params: { tier: "warm" } },
+  { id: "hot", label: "🔥 Hot leads", params: { tier: "hot" } }, // derivato
+  { id: "warm", label: "🟡 Warm", params: { tier: "warm" } }, // derivato
+  // Da ricontattare: filtro su `status` (colonna DB), non su tier — vedi sopra.
   { id: "recontact", label: "↩︎ Da ricontattare", params: { status: "anonymous" } },
   // Quick win: lead caldi ma senza consenso marketing → tier warm (regola US-1)
   { id: "quickwin", label: "⚡ Quick win", params: { tier: "warm", status: "completed" } },

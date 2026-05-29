@@ -111,9 +111,11 @@ export const SORTABLE_COLUMNS: Record<string, string> = {
 };
 
 // Chiavi di ordinamento "sintetiche": non sono colonne DB ma metriche derivate.
-// L'ordinamento avviene in memoria sul set paginato (vedi fetchSubmissions).
-// 'tier' è ordinabile via ranking; 'gap' resta colonna informativa (non qui).
-export const SYNTHETIC_SORT_KEYS = ["tier"] as const;
+// L'ordinamento avviene in memoria sul set paginato (vedi fetchSubmissions):
+//  - 'tier' ordina per ranking hot>warm>cold (tie-break su overall_score);
+//  - 'gap'  ordina per gap totale di vendita (computeGapTotale); i record senza
+//    punteggi (gap null) finiscono in coda a prescindere dalla direzione.
+export const SYNTHETIC_SORT_KEYS = ["tier", "gap"] as const;
 export function isSortable(sort: string): boolean {
   return sort in SORTABLE_COLUMNS || (SYNTHETIC_SORT_KEYS as readonly string[]).includes(sort);
 }

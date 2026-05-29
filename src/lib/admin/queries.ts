@@ -167,24 +167,53 @@ function mockMatches(r: SubmissionRow, f: SubmissionFilters): boolean {
   return true;
 }
 
+// Ordinamento per metriche derivate (chiavi sintetiche: 'tier' | 'gap').
+// Condiviso fra percorso reale (fetchSubmissions) e percorso mock cosi' la
+// semantica e' identica. I record senza gap valorizzato (gap null) finiscono
+// sempre in coda, qualsiasi sia la direzione.
+function sortSynthetic<
+  T extends {
+    status: string;
+    overall_score: number | null;
+    email: string | null;
+    consenso_marketing: boolean | null;
+  }
+>(rows: T[], sort: string, dir: "asc" | "desc"): T[] {
+  const sign = dir === "asc" ? 1 : -1;
+  const out = [...rows];
+  if (sort === "gap") {
+    out.sort((a, b) => {
+      const ga = computeGapTotale(a as never);
+      const gb = computeGapTotale(b as never);
+      if (ga == null && gb == null) return 0;
+      if (ga == null) return 1; // null sempre in coda
+      if (gb == null) return -1;
+      return (ga - gb) * sign;
+    });
+  } else {
+    // 'tier': ranking hot>warm>cold (tie-break overall_score) via score.
+    out.sort((a, b) => (computeLeadTier(a).score - computeLeadTier(b).score) * sign);
+  }
+  return out;
+}
+
 function sortMockRows(rows: SubmissionRow[], f: SubmissionFilters): SubmissionRow[] {
+  if (f.sort === "tier" || f.sort === "gap") {
+    return sortSynthetic(rows, f.sort, f.dir);
+  }
   const dir = f.dir === "asc" ? 1 : -1;
   const out = [...rows];
-  if (f.sort === "tier") {
-    out.sort((a, b) => (computeLeadTier(b).score - computeLeadTier(a).score) * (dir === 1 ? -1 : 1));
-  } else {
-    const col = SORTABLE_COLUMNS[f.sort] ?? "created_at";
-    out.sort((a, b) => {
-      const av = (a as unknown as Record<string, unknown>)[col];
-      const bv = (b as unknown as Record<string, unknown>)[col];
-      if (av == null && bv == null) return 0;
-      if (av == null) return 1;
-      if (bv == null) return -1;
-      if (av < bv) return -1 * dir;
-      if (av > bv) return 1 * dir;
-      return 0;
-    });
-  }
+  const col = SORTABLE_COLUMNS[f.sort] ?? "created_at";
+  out.sort((a, b) => {
+    const av = (a as unknown as Record<string, unknown>)[col];
+    const bv = (b as unknown as Record<string, unknown>)[col];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (av < bv) return -1 * dir;
+    if (av > bv) return 1 * dir;
+    return 0;
+  });
   return out;
 }
 
@@ -207,10 +236,12 @@ export async function fetchSubmissions(
   }
 
   const client = getClient();
-  const synthetic = f.sort === "tier";
+  // Ordinamenti "sintetici": metriche derivate (non colonne DB) ordinate in
+  // memoria. 'tier' usa il ranking di computeLeadTier; 'gap' usa computeGapTotale.
+  const synthetic = f.sort === "tier" || f.sort === "gap";
   const needsMemoryRefine = !!f.tier;
 
-  // Se l'ordinamento e' sintetico (tier) o il tier richiede raffinamento in
+  // Se l'ordinamento e' sintetico (tier/gap) o il tier richiede raffinamento in
   // memoria, dobbiamo caricare il set filtrato e impaginare in JS.
   if (synthetic || needsMemoryRefine) {
     let q = client.from("submissions").select(LIST_COLUMNS);
@@ -221,12 +252,7 @@ export async function fetchSubmissions(
     if (error) throw new Error(error.message);
     let rows = (data ?? []) as unknown as SubmissionListItem[];
     if (f.tier) rows = rows.filter((r) => computeLeadTier(r).tier === f.tier);
-    if (synthetic) {
-      const dir = f.dir === "asc" ? 1 : -1;
-      rows = [...rows].sort(
-        (a, b) => (computeLeadTier(a).score - computeLeadTier(b).score) * dir
-      );
-    }
+    if (synthetic) rows = sortSynthetic(rows, f.sort, f.dir);
     const total = rows.length;
     const from = (f.page - 1) * f.pageSize;
     return { rows: rows.slice(from, from + f.pageSize), total };

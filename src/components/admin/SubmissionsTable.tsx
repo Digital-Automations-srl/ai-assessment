@@ -89,7 +89,7 @@ export default function SubmissionsTable({
               className="text-right"
             />
             <th className="px-3 py-2 text-left font-semibold">Livello</th>
-            <th className="px-3 py-2 text-left font-semibold">Gap</th>
+            <SortHeader col="gap" label="Gap" filters={filters} />
             <th className="px-3 py-2 text-left font-semibold">Compliance</th>
             <th className="px-3 py-2" />
           </tr>
