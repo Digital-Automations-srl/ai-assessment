@@ -2,7 +2,7 @@
 
 ## Progetto
 
-Quiz di autovalutazione AI Readiness per PMI italiane. Misura la maturita' AI su 6 assi (30 domande), produce un grafico a ragno SVG, una checklist compliance su 7 aree obbligatorie, e raccoglie lead per follow-up commerciale.
+Quiz di autovalutazione AI Readiness per PMI italiane. Misura la maturita' AI su 6 assi (30 domande), produce un grafico a ragno SVG, una checklist compliance su 7 aree obbligatorie, e raccoglie lead per follow-up commerciale. Include una **dashboard admin** (`/admin`) per visionare i lead raccolti.
 
 Dominio: `aiassessment.digitalautomations.it`
 
@@ -11,8 +11,8 @@ Dominio: `aiassessment.digitalautomations.it`
 - **Frontend + Backend**: Next.js 16, React 19, TypeScript, Tailwind CSS 4
 - **Email**: Nodemailer via AWS SES SMTP
 - **Analytics**: Plausible
-- **Deploy**: Vercel (auto-deploy da GitHub)
-- **Database**: Nessuno (tutto client-side, dati inviati via email)
+- **Deploy**: Vercel (auto-deploy da GitHub, branch `main`)
+- **Database**: Supabase (Postgres, progetto `ssifdqiwmuktemixiubz`). Scritture server-side via **Secret key** (`SUPABASE_SECRET_KEY`, formato moderno `sb_secret_*`); **RLS attiva** sulla tabella `submissions`. Lettura quiz pubblico via anon/publishable key.
 
 ## Comandi
 
@@ -29,29 +29,28 @@ src/
   app/
     page.tsx                    # Orchestratore quiz (state machine)
     layout.tsx                  # Root layout + metadata + Plausible
-    globals.css                 # Tailwind + variabili colore DA
-    api/send-report/route.ts    # API POST: invio email report
-  components/quiz/
-    Header.tsx                  # Header fisso
-    Landing.tsx                 # Step 1: landing page
-    Instructions.tsx            # Step 2: istruzioni pre-quiz
-    ContextPage.tsx             # Step 3: 3 domande contesto (una pagina)
-    AxisPage.tsx                # Step 4: 5 domande per asse (una pagina per asse)
-    ProgressBar.tsx             # Barra progresso per asse
-    SpiderChart.tsx             # Grafico a ragno SVG
-    Results.tsx                 # Step 5: risultato gratuito
-    LeadForm.tsx                # Step 6: form cattura lead
-    Report.tsx                  # Step 7: report dettagliato
-    ComplianceChecklist.tsx     # 7 aree compliance con semaforo
-    ThankYou.tsx                # Step 8: conferma
+    proxy.ts                    # (Next 16, NON middleware.ts) protegge /admin/*
+    api/send-report/route.ts    # POST: invio email + insert submission (secret key, affidabile)
+    api/track-result/route.ts   # POST: cattura anonima allo step "risultati"
+    api/admin/{login,logout,export}/route.ts  # auth dashboard + export CSV
+    admin/                      # Dashboard riservata: page.tsx, [id]/page.tsx, login/page.tsx, stats/page.tsx
+  components/quiz/              # Landing, Instructions, ContextPage, AxisPage, ProgressBar,
+                                #   SpiderChart, Results, LeadForm, Report, ComplianceChecklist, ThankYou
+  components/admin/             # SubmissionsTable, FilterBar, Pagination, SubmissionDetail, Charts, ...
   lib/
     quiz-data.ts                # 33 domande (3 contesto + 30 quiz)
     scoring.ts                  # Calcolo punteggi, livelli, compliance
     email.ts                    # Template email HTML (lead + interno)
+    spider-chart-svg.ts         # SVG/PNG del ragno per le email
     types.ts                    # Tipi TypeScript
+    supabase.ts                 # client anon (lato quiz pubblico)
+    supabase-admin.ts           # client server-only con SUPABASE_SECRET_KEY (bypassa RLS)
+    admin/                      # auth, queries, filters, format, types della dashboard
+supabase/
+  migrations/                   # migrazioni schema (es. 20260529_assessment_capture.sql)
 docs/
   specs/                        # Specifiche quiz e componente ragno JSX
-  coproduzione/                 # Manuali co-produzione
+  coproduzione/                 # Manuali co-produzione (v1.9)
 ```
 
 ## Convenzioni
@@ -59,15 +58,17 @@ docs/
 - **Naming file**: PascalCase per componenti (`AxisPage.tsx`)
 - **Lingua**: codice in inglese, UI in italiano
 - **Import**: path alias `@/` per `src/`
-- **Componenti**: tutti `"use client"` (quiz e' interamente client-side)
+- **Componenti**: quiz tutti `"use client"`; la dashboard usa Server Components + route handlers
 - **Colori DA**: Navy #004172, Blue #016FC0, Light Gray #E4E4E4, Amber #E09900
 
 ## Note Tecniche
 
-- Il quiz e' una state machine client-side: landing → instructions → context → quiz (6 assi) → results → lead-form → report → thank-you
-- Email inviate via API route `/api/send-report` (POST) con nodemailer + AWS SES SMTP
-- Due email: una al lead (report), una a digital@digitalautomations.it (notifica interna)
-- Il file `.env.local` contiene i secret SMTP — non committare mai
+- Quiz = state machine client-side: landing → instructions → context → quiz (6 assi) → results → lead-form → report → thank-you
+- Email via `/api/send-report` (POST, nodemailer + AWS SES). Due email: lead (report) + interna a digital@digitalautomations.it
+- **Cattura dati**: insert su `submissions` ora **affidabile** (await + alert interno su fallimento). **Cattura anonima** pre-form via `/api/track-result` + `submission_token` effimero (no PII). `quiz_answers` (jsonb) storicizza le 30 risposte (solo nuovi assessment)
+- **Dashboard `/admin`**: auth a **password unica** (`ADMIN_PASSWORD`, cookie HMAC), protezione via `proxy.ts`. Letture via `supabase-admin` (Secret key). Sezioni: tabella+filtri+KPI, dettaglio (con SpiderChart) + compliance, export CSV, statistiche
+- **DB `submissions`**: RLS attiva (policy: insert anonimo dalla chiave pubblica). Colonne aggiunte da migrazione: `quiz_answers, submission_token, status, completed_at, consenso, consenso_marketing`. Nota: `ai_usage` contiene il **ruolo** del rispondente (legacy naming)
+- `.env.local` (mai committare): SMTP_* · NEXT_PUBLIC_SUPABASE_URL · SUPABASE_ANON_KEY · **SUPABASE_SECRET_KEY** · **ADMIN_PASSWORD** · ENCHARGE_WEBHOOK_URL. ⚠️ se un valore contiene `#`, **quotalo** (dotenv tronca al `#` non quotato)
 - Specifiche complete: `docs/specs/QUIZ_SPECS.md`
 - Scoring: G2 opzione C = 2.5 (non standard), "Non so" = 1.5
 
@@ -76,3 +77,5 @@ docs/
 - Esegui `npm run build && npm run lint` prima di dichiarare completato
 - NON installare pacchetti senza approvazione
 - Committa al completamento di ogni sotto-task logico
+- **Sessioni operative / chip in worktree ISOLATA** (non in-place sulla working dir della sessione PM, per evitare collisioni di branch)
+- Migrazioni DB: vanno applicate a mano nel SQL Editor di Supabase (l'ambiente dev non raggiunge il DB)
