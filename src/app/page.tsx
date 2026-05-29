@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { CONTEXT_QUESTIONS, AXES } from "@/lib/quiz-data";
 import { calculateResults } from "@/lib/scoring";
 import type { LeadData } from "@/lib/types";
@@ -36,6 +36,12 @@ export default function QuizPage() {
   const [leadData, setLeadData] = useState<LeadData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Token di sessione effimero (uuid v4) per collegare il record anonimo
+  // creato allo step "results" al lead inviato col form. Vive in un ref:
+  // non e' persistito (no cookie/localStorage) e si rinnova a ogni reload.
+  const submissionTokenRef = useRef<string | null>(null);
+  const trackedRef = useRef(false);
+
   const currentAxis = AXES[axisIndex];
 
   const computeResults = useCallback(() => {
@@ -45,6 +51,35 @@ export default function QuizPage() {
     }
     return calculateResults(scoreMap, contextAnswers, AXES);
   }, [quizAnswers, contextAnswers]);
+
+  // C — cattura anonima: allo step "results" crea un record SENZA PII
+  // (punteggi + contesto + 30 risposte) collegato al token effimero.
+  useEffect(() => {
+    if (step !== "results" || trackedRef.current) return;
+    trackedRef.current = true;
+
+    const token = crypto.randomUUID();
+    submissionTokenRef.current = token;
+
+    const r = computeResults();
+    fetch("/api/track-result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        submissionToken: token,
+        quizAnswers,
+        results: {
+          contextAnswers,
+          axisResults: r.axisResults,
+          overallScore: r.overallScore,
+          overallLabel: r.overallLabel,
+          compliance: r.compliance,
+        },
+      }),
+    }).catch(() => {
+      // Tracking anonimo best-effort: non deve mai bloccare la UX.
+    });
+  }, [step, computeResults, quizAnswers, contextAnswers]);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "instant" });
 
@@ -109,6 +144,8 @@ export default function QuizPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           lead: data,
+          submissionToken: submissionTokenRef.current,
+          quizAnswers,
           results: {
             contextAnswers,
             axisResults: r.axisResults,
