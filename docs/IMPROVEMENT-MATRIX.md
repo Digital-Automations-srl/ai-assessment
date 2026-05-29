@@ -39,6 +39,8 @@
 
 ## Piano a due wave
 
+> **Split confermato dallo sponsor (2026-05-29).** Wave 1 in esecuzione via sessione operativa (branch `claude/wave1-tech`, chip autonomo: interazioni solo a inizio/fine). **PROD-1 escluso dalla Wave 1** e rinviato a *dopo* i dati di funnel di GROW-1 (l'impatto sull'abbandono è presunto senza dati di drop-off reali).
+
 ### Wave 1 — Miglioramento tecnico (interno, shippabile insieme)
 Interventi interni al sistema: nessuna coordinazione con piattaforme esterne, nessun cambio nell'ingaggio col cliente.
 **OBS-1 (per primo)** · INFRA-2 · SEC-1 · SEC-2 · SEC-3 · CODE-1 · CODE-2 · CODE-3 · DATA-1 · DATA-2 · GROW-1 · PROD-1
