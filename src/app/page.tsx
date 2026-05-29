@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { CONTEXT_QUESTIONS, AXES } from "@/lib/quiz-data";
 import { calculateResults } from "@/lib/scoring";
+import { pickUtm, type UtmParams } from "@/lib/utm";
 import type { LeadData } from "@/lib/types";
 import Header from "@/components/quiz/Header";
 import Landing from "@/components/quiz/Landing";
@@ -42,6 +43,14 @@ export default function QuizPage() {
   const submissionTokenRef = useRef<string | null>(null);
   const trackedRef = useRef(false);
 
+  // DATA-1: cattura i parametri utm_* dal primo load (prima di qualsiasi
+  // navigazione interna), conservati in un ref e inviati con track-result e
+  // send-report per l'attribuzione sorgente del lead.
+  const utmRef = useRef<UtmParams>({});
+  useEffect(() => {
+    utmRef.current = pickUtm(new URLSearchParams(window.location.search));
+  }, []);
+
   const currentAxis = AXES[axisIndex];
 
   const computeResults = useCallback(() => {
@@ -68,6 +77,7 @@ export default function QuizPage() {
       body: JSON.stringify({
         submissionToken: token,
         quizAnswers,
+        utm: utmRef.current,
         results: {
           contextAnswers,
           axisResults: r.axisResults,
@@ -146,6 +156,7 @@ export default function QuizPage() {
           lead: data,
           submissionToken: submissionTokenRef.current,
           quizAnswers,
+          utm: utmRef.current,
           results: {
             contextAnswers,
             axisResults: r.axisResults,

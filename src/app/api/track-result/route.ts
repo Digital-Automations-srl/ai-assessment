@@ -7,6 +7,7 @@ import {
   recordFailure,
   recordSuccess,
 } from "@/lib/observability";
+import { utmColumns, type UtmParams } from "@/lib/utm";
 import type { QuizResults } from "@/lib/types";
 
 // Cattura ANONIMA allo step "results" (completamenti senza lead).
@@ -18,10 +19,11 @@ export async function POST(request: NextRequest) {
   const requestId = newRequestId();
   try {
     const body = await request.json();
-    const { submissionToken, results, quizAnswers } = body as {
+    const { submissionToken, results, quizAnswers, utm } = body as {
       submissionToken?: string;
       results?: QuizResults;
       quizAnswers?: QuizAnswerMap;
+      utm?: UtmParams;
     };
 
     // --- Validazione minima (nessun PII atteso qui) ---
@@ -62,6 +64,7 @@ export async function POST(request: NextRequest) {
         submission_token: submissionToken,
         status: "anonymous",
         ...buildSubmissionFields(results, quizAnswers),
+        ...utmColumns(utm),
       },
       { onConflict: "submission_token", ignoreDuplicates: true }
     );

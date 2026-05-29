@@ -102,6 +102,12 @@ function buildRow(i: number): SubmissionRow {
   const ruolo = pick(r, RUOLI);
   const consensoMkt = r() < 0.45;
 
+  // DATA-1: UTM finti per varieta' (alcuni record senza attribuzione → NULL).
+  const hasUtm = r() < 0.6;
+  const utmSource = hasUtm ? pick(r, ["google", "linkedin", "newsletter", "referral"]) : null;
+  const utmMedium = hasUtm ? pick(r, ["cpc", "social", "email", "organic"]) : null;
+  const utmCampaign = hasUtm ? pick(r, ["ai-readiness", "pmi-2026", "webinar"]) : null;
+
   return {
     id: `mock-${String(i).padStart(3, "0")}`,
     created_at: created.toISOString(),
@@ -124,6 +130,10 @@ function buildRow(i: number): SubmissionRow {
     submission_token: null,
     consenso: anonymous ? null : true,
     consenso_marketing: anonymous ? null : consensoMkt,
+    utm_source: utmSource,
+    utm_medium: utmMedium,
+    utm_campaign: utmCampaign,
+    utm_content: null,
     ...(axisScores as Record<`score_${(typeof AXIS_KEYS)[number]}`, number>),
   } as SubmissionRow;
 }

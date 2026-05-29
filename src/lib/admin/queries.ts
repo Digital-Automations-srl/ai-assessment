@@ -69,6 +69,10 @@ export const EXPORT_COLUMNS = [
   ...AXIS_KEYS.map((k) => `score_${k}`),
   "consenso",
   "consenso_marketing",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
   "tier",
   "giorni_attesa",
   "gap_totale",
@@ -372,7 +376,7 @@ export async function fetchExportRows(
   const cols =
     "id,created_at,completed_at,status,nome,cognome,email,azienda,telefono,referral,settore,dipendenti,ai_usage,answers,compliance,overall_score,overall_label," +
     AXIS_KEYS.map((k) => `score_${k}`).join(",") +
-    ",consenso,consenso_marketing";
+    ",consenso,consenso_marketing,utm_source,utm_medium,utm_campaign,utm_content";
   let q = client.from("submissions").select(cols, { count: "exact" });
   q = applyFilters(q, f);
   const { data, error, count } = await q

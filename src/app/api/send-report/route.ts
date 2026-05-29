@@ -13,6 +13,7 @@ import {
   recordFailure,
   recordSuccess,
 } from "@/lib/observability";
+import { utmColumns, type UtmParams } from "@/lib/utm";
 import type { LeadData, QuizResults, AxisKey } from "@/lib/types";
 
 function escHtml(value: string): string {
@@ -82,11 +83,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { lead, results, quizAnswers, submissionToken } = body as {
+    const { lead, results, quizAnswers, submissionToken, utm } = body as {
       lead: LeadData;
       results: QuizResults;
       quizAnswers?: QuizAnswerMap;
       submissionToken?: string;
+      utm?: UtmParams;
     };
 
     // --- Validation ---
@@ -219,6 +221,7 @@ export async function POST(request: NextRequest) {
       try {
         const fields = {
           ...buildSubmissionFields(results, quizAnswers),
+          ...utmColumns(utm),
           nome: lead.nome,
           cognome: lead.cognome,
           email: lead.email,

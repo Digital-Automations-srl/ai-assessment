@@ -39,6 +39,12 @@ export interface SubmissionRow extends AxisScoreColumns {
   submission_token: string | null;
   consenso: boolean | null;
   consenso_marketing: boolean | null;
+
+  // DATA-1 — attribuzione sorgente (storici → NULL).
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
 }
 
 // Sottoinsieme di colonne usato nella tabella (lista). Esteso con i campi che
