@@ -1,8 +1,10 @@
 import {
   DEFAULT_PAGE_SIZE,
   DIPENDENTI_OPTIONS,
+  RUOLO_OPTIONS,
   SETTORE_OPTIONS,
-  SORTABLE_COLUMNS,
+  isSortable,
+  type LeadTierFilter,
   type SubmissionFilters,
 } from "./types";
 
@@ -21,6 +23,8 @@ export function parseFilters(params: RawParams): SubmissionFilters {
   const status = first(params.status);
   const settore = first(params.settore);
   const dipendenti = first(params.dipendenti);
+  const ruolo = first(params.ruolo);
+  const tier = first(params.tier);
   const dateFrom = first(params.dateFrom);
   const dateTo = first(params.dateTo);
   const search = first(params.q);
@@ -37,11 +41,16 @@ export function parseFilters(params: RawParams): SubmissionFilters {
     dipendenti: DIPENDENTI_OPTIONS.includes(dipendenti as never)
       ? dipendenti
       : undefined,
+    ruolo: RUOLO_OPTIONS.includes(ruolo as never) ? ruolo : undefined,
+    tier:
+      tier === "hot" || tier === "warm" || tier === "cold"
+        ? (tier as LeadTierFilter)
+        : undefined,
     dateFrom: dateFrom && DATE_RE.test(dateFrom) ? dateFrom : undefined,
     dateTo: dateTo && DATE_RE.test(dateTo) ? dateTo : undefined,
     // limita la lunghezza della ricerca per sicurezza
     search: search ? search.slice(0, 120) : undefined,
-    sort: sort in SORTABLE_COLUMNS ? sort : "created_at",
+    sort: isSortable(sort) ? sort : "created_at",
     dir: dir === "asc" ? "asc" : "desc",
     page: Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1,
     pageSize:
@@ -61,6 +70,8 @@ export function filtersToQuery(
   if (m.status) sp.set("status", m.status);
   if (m.settore) sp.set("settore", m.settore);
   if (m.dipendenti) sp.set("dipendenti", m.dipendenti);
+  if (m.ruolo) sp.set("ruolo", m.ruolo);
+  if (m.tier) sp.set("tier", m.tier);
   if (m.dateFrom) sp.set("dateFrom", m.dateFrom);
   if (m.dateTo) sp.set("dateTo", m.dateTo);
   if (m.search) sp.set("q", m.search);
