@@ -49,3 +49,27 @@
 - Verifica `/admin` in prod (login pw intera). Confermare `ADMIN_PASSWORD` completo su Vercel.
 - Opzionale: drop policy insert anonimo (hardening RLS). Rietichettare `ai_usage` (=ruolo) in dashboard. Verificare rendering compliance nel dettaglio.
 - Privacy policy cattura anonima: gestita dallo sponsor.
+
+---
+
+## 2026-05-29 (sera) — Sessione PM: verifica + merge Wave 1 → PROD
+
+### Diagnosi d'apertura
+- Snapshot iniziale fuorviante (branch `claude/wave1-tech` apparentemente vuoto + sessione "Wave 1" idle con `cwd`=main) → **falso allarme** ritirato: la sessione operativa stava lavorando **correttamente nella worktree isolata**; il `cwd` della lista sessioni è solo il punto d'avvio. Re-scan live: 8→12 commit comparsi.
+
+### Verifica Wave 1 (gate eseguito in PM, non self-report)
+- `npm run build` ok · `npm run lint` pulito · `vitest` **169/169** · Playwright e2e **3/3** · spot-check SEC-1 fail-closed ok · `merge-tree` **0 conflitti**.
+- Env (`ADMIN_SESSION_SECRET` su Vercel) + 2 migrazioni SQL (`20260529130000_wave1.sql`, `20260529140000_sec2_drop_anon_insert_policy.sql`) **già applicate dallo sponsor**.
+
+### Merge + deploy
+- Merge `--no-ff` `claude/wave1-tech` → `main` (`0b88187`), push (`d1a35c5..0b88187`) → **deploy Vercel prod** automatico.
+- `npm install` in main per sincronizzare `@playwright/test` (devDependency nuova, approvata) → re-build verde.
+- **Igiene**: rimossa worktree `wave1-tech`; eliminati branch locali `claude/wave1-tech`, `claude/dashboard-v2`, `worktree-wf_95641af1-fe9-{6,17}` (tutti mergiati) + branch remoto `claude/wave1-tech`. Resta solo `main`.
+
+### Item consegnati (10): OBS-1, SEC-1, SEC-2, SEC-3, CODE-1, CODE-2, CODE-3, DATA-1, DATA-2, GROW-1
+### ⚠️ Gap rilevato
+- **INFRA-2 (backup Supabase + health-check periodico) NON consegnato** dalla Wave 1 (assente dall'handoff del chip). Re-immesso in backlog: è l'item di affidabilità complementare a OBS-1 (causa-radice incidente pausa). **Da pianificare.**
+- `PROD-1` resta rinviato (post-funnel GROW-1).
+
+### Follow-up post-deploy (lato sponsor)
+- Verificare su Vercel: deploy verde + `/admin` logga gli accessi ("Ultimi accessi") + login con pw intera.

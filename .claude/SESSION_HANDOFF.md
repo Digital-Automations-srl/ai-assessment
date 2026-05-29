@@ -24,17 +24,24 @@
 - **Follow-up dati RISOLTI** (UPDATE in DB): i 24 recuperati ora hanno `answers.X1/X2/X3` (filtro "per ruolo" ok) e `compliance` arricchita col testo canonico di `scoring.ts`.
 - ⚠️ **Chiarimento**: il RUOLO del rispondente è `answers['X3']`, NON `ai_usage` (= "uso AI dichiarato"). Correggere eventuali note residue.
 
-## Backlog prioritizzato
-- 📋 **Matrice opportunità** (fattibilità/impatto/fit, 20 voci, piano a 2 wave: Wave 1 tecnica interna · Wave 2 opzionale tool esterni/proattivo cliente): **`docs/IMPROVEMENT-MATRIX.md`**. Fondante: **OBS-1** (observability — causa-radice dell'incidente pausa).
+## Wave 1 tecnica — ✅ IN PRODUZIONE (merge 2026-05-29, main `0b88187`)
+- Consegnati 10 item: **OBS-1** (observability/alerting), **SEC-1** (`ADMIN_SESSION_SECRET` fail-closed in prod), **SEC-2** (drop policy RLS insert-anonimo), **SEC-3** (audit log admin → tabella `admin_audit` + mini-vista "Ultimi accessi"), **CODE-1** (font 1.1MB esternalizzato), **CODE-2** (e2e Playwright in `e2e/`), **CODE-3** (design tokens), **DATA-1** (UTM), **DATA-2** (segnali comportamentali). Gate verificato in PM (build/lint ok, vitest 169/169, e2e 3/3). Env + 2 migrazioni SQL già applicate.
+- Nuovi moduli: `src/lib/{observability,utm,behavior,plausible,design-tokens}.ts`, `src/lib/admin/audit.ts`, `src/components/admin/RecentAccess.tsx`. Nuova devDependency `@playwright/test` (`npm run test:e2e`, `npx playwright install chromium` la 1ª volta).
 
-## Sessioni operative aperte (VERIFICARE per prime)
-- 🔧 **Wave 1 — tecnica** (chip autonomo, branch `claude/wave1-tech`, worktree isolata `/Users/edoardo/Developer/.AI-Assessment-wt/wave1-tech`): implementa OBS-1, SEC-1/2/3, CODE-1/2/3, DATA-1/2, GROW-1 (struttura: interazioni solo a inizio/fine). **NON ancora mergiata.** Al ritorno: leggi la review finale del chip → fai le **azioni manuali** che riporta (applicare `supabase/migrations/*_wave1.sql` + SQL drop policy RLS nel SQL Editor Supabase; aggiungere `ADMIN_SESSION_SECRET` su Vercel + `.env.local`) → poi **merge `claude/wave1-tech` → main** con build/lint/test verdi + smoke prima del push prod. `PROD-1` rinviato a dopo i dati di funnel di GROW-1.
+## Backlog prioritizzato
+- 📋 **Matrice opportunità**: **`docs/IMPROVEMENT-MATRIX.md`** (Wave 1 segnata ✅). Restano aperti:
+  - ⚠️ **INFRA-2** (backup automatici Supabase + health-check periodico): era in scope Wave 1 ma **NON consegnato** dal chip → da pianificare (affidabilità, complementare a OBS-1).
+  - **PROD-1** (quiz inline): rinviato a *dopo* i dati di funnel di GROW-1.
+  - **Wave 2** (opzionale): GROW-2 nurturing Encharge, GROW-6 CRM/sync, INFRA-3 SES, GROW-3 report PDF, PROD-3 exit-intent, PROD-2 consenso/GDPR, GROW-4 benchmark, GROW-5 i18n.
+
+## Sessioni operative aperte
+- ✅ Nessuna. Wave 1 mergiata e branch/worktree ripuliti (resta solo `main`).
 
 ## Follow-up aperti
-- Verificare `/admin` in **produzione** (login con la password **intera**, incluso `#`).
-- **Vercel**: confermare `ADMIN_PASSWORD` = valore completo (Vercel letterale; in locale `.env.local` va quotato per via del `#`).
-- Hardening RLS (opzionale): `drop policy "public insert submissions"` (scritture ora via secret key) → chiude l'avviso "RLS Policy Always True".
-- Avvisi GraphQL "object visible": cosmetici (la RLS protegge i dati).
+- 🔲 **Verifica post-deploy (lato sponsor)**: su Vercel deploy verde + `/admin` logga gli accessi ("Ultimi accessi") + login con la password **intera** (incluso `#`).
+- 🔲 **Vercel**: confermare `ADMIN_PASSWORD` = valore completo e `ADMIN_SESSION_SECRET` presente (SEC-1: senza, il login admin si rompe in prod — fail-closed).
+- ⚠️ **INFRA-2** da pianificare (vedi backlog).
+- Rietichettare `ai_usage` (=ruolo) nella UI dashboard (cosmetico). Avvisi GraphQL "object visible": cosmetici (RLS protegge).
 - Privacy policy sulla cattura anonima: **gestita dallo sponsor**.
 
 ## Sicurezza / segreti

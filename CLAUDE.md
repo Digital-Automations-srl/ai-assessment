@@ -20,6 +20,8 @@ Dominio: `aiassessment.digitalautomations.it`
 npm run dev          # Dev server (http://localhost:3000)
 npm run build        # Build produzione
 npm run lint         # ESLint
+npm run test         # Vitest (unit + integrazione route)
+npm run test:e2e     # Playwright e2e quiz pubblico (npx playwright install chromium la 1a volta)
 ```
 
 ## Struttura Cartelle
@@ -69,8 +71,10 @@ docs/
 - **Dashboard `/admin` (v2)**: auth a **password unica** (`ADMIN_PASSWORD`, cookie HMAC), protezione via `proxy.ts`. Letture via `supabase-admin` (Secret key). Sezioni: lista lead (filtri+preset Segmenti+KPI; colonne Priorita'/Giorni/Gap/Compliance), dettaglio (executive summary + SpiderChart + compliance), export CSV arricchito, cruscotto di mercato (`/admin/stats`: heatmap conformita', matrice assi×settore, funnel, maturita' nel tempo, per ruolo)
 - **Metriche derivate lead**: tutte calcolate in `src/lib/admin/lead-scoring.ts` (modulo **puro**, no DB/React, testato): tier hot/warm/cold (soglie centralizzate `TIER_THRESHOLDS`), gap totale, compliance risk, azione consigliata, giorni. Single source of truth riusata da lista, dettaglio ed export. **Ruolo** del rispondente = `answers['X3']` (US-8 filtra su `answers->>'X3'`), NON `ai_usage`. Tier filter: il tier non e' colonna DB → restringimento via predicati AND + raffinamento in memoria (count/paginazione ricalcolati)
 - **Mock dashboard**: `ADMIN_MOCK=1` fa restituire alle query (`src/lib/admin/queries.ts`) un dataset finto deterministico (`src/lib/admin/mock-data.ts`, ~25 lead) per far girare `/admin` senza DB (sandbox). Gate dietro env: mai sul path di produzione
-- **DB `submissions`**: RLS attiva (policy: insert anonimo dalla chiave pubblica). Colonne aggiunte da migrazione: `quiz_answers, submission_token, status, completed_at, consenso, consenso_marketing`. Nota: `ai_usage` contiene il **ruolo** del rispondente (legacy naming)
-- `.env.local` (mai committare): SMTP_* · NEXT_PUBLIC_SUPABASE_URL · SUPABASE_ANON_KEY · **SUPABASE_SECRET_KEY** · **ADMIN_PASSWORD** · ENCHARGE_WEBHOOK_URL. ⚠️ se un valore contiene `#`, **quotalo** (dotenv tronca al `#` non quotato)
+- **DB `submissions`**: RLS attiva. ⚠️ **SEC-2 (Wave 1)**: la policy insert-anonimo always-true è stata **rimossa** (scritture ora solo via Secret key server-side). Colonne: `quiz_answers, submission_token, status, completed_at, consenso, consenso_marketing` + **Wave 1**: `utm_*` (source/medium/campaign/term/content — DATA-1), `behavior` (jsonb segnali comportamentali — DATA-2). Nota: `ai_usage` contiene il **ruolo** del rispondente (legacy naming)
+- **DB `admin_audit`** (Wave 1 / SEC-3): log accessi e azioni della dashboard (login/logout/export). Scritto da `requireAdmin()` (runtime Node) e dalle route `/api/admin/*`; mini-vista "Ultimi accessi" in `/admin` (`components/admin/RecentAccess.tsx`)
+- **Moduli Wave 1** (`src/lib/`): `observability.ts` (OBS-1: retry webhook *awaited*, verifica post-scrittura DB, log strutturato; persistenza DB **prima** del webhook), `admin/audit.ts` (SEC-3), `utm.ts` (DATA-1), `behavior.ts` (DATA-2: plumbing pronto, tie-break tier guidato dal tempo, peso ≤0.09 — non cambia mai la classe tier), `plausible.ts` (GROW-1: eventi custom funnel quiz), `design-tokens.ts` (CODE-3). Font 1.1MB esternalizzato in `src/assets`, letto on-demand (CODE-1). E2e Playwright in `e2e/` (CODE-2)
+- `.env.local` (mai committare): SMTP_* · NEXT_PUBLIC_SUPABASE_URL · SUPABASE_ANON_KEY · **SUPABASE_SECRET_KEY** · **ADMIN_PASSWORD** · **ADMIN_SESSION_SECRET** (SEC-1: **obbligatorio in produzione**, fail-closed; in dev fallback su `ADMIN_PASSWORD`) · ENCHARGE_WEBHOOK_URL. ⚠️ se un valore contiene `#`, **quotalo** (dotenv tronca al `#` non quotato)
 - Specifiche complete: `docs/specs/QUIZ_SPECS.md`
 - Scoring: G2 opzione C = 2.5 (non standard), "Non so" = 1.5
 
