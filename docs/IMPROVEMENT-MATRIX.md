@@ -53,7 +53,8 @@ Toccano integrazioni esterne (Encharge/CRM/AWS SES) o l'ingaggio proattivo del c
 **GROW-2** (nurturing Encharge) · **GROW-6** (CRM + sync) · **INFRA-3** (config AWS SES) · **GROW-3** (report condivisibile/marketing) · **PROD-3** (exit-intent capture + consenso) · **PROD-2** (consenso/GDPR — review legale) · **GROW-4** (benchmark pubblico) · **GROW-5** (i18n — strategico)
 
 #### Decisioni Wave 2 (2026-05-29 sera)
-- 🔵 **GROW-3 — IN CORSO** (solo-PDF come primo passo), su ramo dedicato/worktree isolata per review prima del merge. Sinergia: ragno PNG (`spider-chart-svg.ts`) + scoring/compliance già pronti.
+- ⏸️ **GROW-3 — IN PAUSA** (solo-PDF, PRD pronto in `docs/specs/GROW-3_PRD.md`). Tecnicamente indipendente dall'analisi-funnel (il PDF è un value-add del report già gated), ma per scelta sponsor si rivaluta **dopo** aver deciso la direzione del funnel, in sequenza pulita.
+- 🔬 **Ottimizzazione funnel (results→form)** — nuovo tema da `docs/FUNNEL-GATING-ANALYSIS.md`: la pagina risultati svela già lo scorecard completo; il report è già gated. Raccomandazione: **non amputare**, ma **Fase 0** (teaser di curiosità sui risultati + eventi diagnostici `get_report_clicked`/`results_scroll`/`lead_form_abandoned`) → raccogliere 1-2 settimane → eventuale A/B. Stessa dipendenza-dati di **PROD-3**: decidere insieme.
 - ⛔ **INFRA-3 — BLOCCATO** (dipendenza esterna): non quick-win per noi, richiede **accesso AWS via ufficio tecnico** (config SES→SNS). Da girare all'ufficio tecnico quando si vuole procedere.
 - ⏸️ **PROD-3 — IN ATTESA DATI**: decidere *dopo* qualche giorno di funnel GROW-1 (quantificare il drop-off post-risultati) + decisione consenso/GDPR. Stessa logica del rinvio di PROD-1.
 
