@@ -30,7 +30,7 @@
 
 ## Backlog prioritizzato
 - 📋 **Matrice opportunità**: **`docs/IMPROVEMENT-MATRIX.md`** (Wave 1 segnata ✅). Restano aperti:
-  - ⚠️ **INFRA-2** (backup automatici Supabase + health-check periodico): era in scope Wave 1 ma **NON consegnato** dal chip → da pianificare (affidabilità, complementare a OBS-1).
+  - ✅ **INFRA-2 CHIUSO**: passaggio a **Supabase Pro** (backup giornalieri + restore self-service; no auto-pausa) + OBS-1 già in prod. Residuo opzionale: dry-run una-tantum del restore.
   - **PROD-1** (quiz inline): rinviato a *dopo* i dati di funnel di GROW-1.
   - **Wave 2** (opzionale): GROW-2 nurturing Encharge, GROW-6 CRM/sync, INFRA-3 SES, GROW-3 report PDF, PROD-3 exit-intent, PROD-2 consenso/GDPR, GROW-4 benchmark, GROW-5 i18n.
 
@@ -40,7 +40,7 @@
 ## Follow-up aperti
 - 🔲 **Verifica post-deploy (lato sponsor)**: su Vercel deploy verde + `/admin` logga gli accessi ("Ultimi accessi") + login con la password **intera** (incluso `#`).
 - 🔲 **Vercel**: confermare `ADMIN_PASSWORD` = valore completo e `ADMIN_SESSION_SECRET` presente (SEC-1: senza, il login admin si rompe in prod — fail-closed).
-- ⚠️ **INFRA-2** da pianificare (vedi backlog).
+- (opzionale) dry-run una-tantum del restore Supabase Pro, per confermare il ripristino.
 - Rietichettare `ai_usage` (=ruolo) nella UI dashboard (cosmetico). Avvisi GraphQL "object visible": cosmetici (RLS protegge).
 - Privacy policy sulla cattura anonima: **gestita dallo sponsor**.
 

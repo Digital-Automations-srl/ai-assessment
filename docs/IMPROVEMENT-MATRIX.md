@@ -44,7 +44,7 @@
 ### Wave 1 — Miglioramento tecnico (interno, shippabile insieme) — ✅ COMPLETATA (2026-05-29, merge `0b88187` → prod)
 Interventi interni al sistema: nessuna coordinazione con piattaforme esterne, nessun cambio nell'ingaggio col cliente.
 **OBS-1 (per primo)** · SEC-1 · SEC-2 · SEC-3 · CODE-1 · CODE-2 · CODE-3 · DATA-1 · DATA-2 · GROW-1 — **tutti consegnati e mergiati** (gate verificato in sessione PM: build/lint ok, vitest 169/169, e2e 3/3; env + 2 migrazioni SQL applicate).
-**Non inclusi**: `INFRA-2` (backup Supabase + health-check) **rimane aperto** in backlog; `PROD-1` (quiz inline) rinviato a *dopo* i dati di funnel di GROW-1.
+**Non inclusi**: `INFRA-2` **CHIUSO/superato** (2026-05-29): passaggio a **Supabase Pro** → backup giornalieri automatici + restore self-service (metà "protezione-dato") e i progetti Pro non vanno in pausa (elimina la causa-radice dell'incidente); la metà "health-check/alerting" è coperta da **OBS-1**. Residuo opzionale: dry-run una-tantum del restore. `PROD-1` (quiz inline) rinviato a *dopo* i dati di funnel di GROW-1.
 
 Caveat: richiedono **approvazione** per regola co-produzione → migrazioni DB: SEC-3, DATA-1, DATA-2; nuova dipendenza: CODE-2 (Playwright). `GROW-1`/`DATA-1` servono il marketing ma l'implementazione è interna (borderline, qui in Wave 1).
 

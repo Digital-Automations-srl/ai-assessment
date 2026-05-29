@@ -67,8 +67,8 @@
 - **Igiene**: rimossa worktree `wave1-tech`; eliminati branch locali `claude/wave1-tech`, `claude/dashboard-v2`, `worktree-wf_95641af1-fe9-{6,17}` (tutti mergiati) + branch remoto `claude/wave1-tech`. Resta solo `main`.
 
 ### Item consegnati (10): OBS-1, SEC-1, SEC-2, SEC-3, CODE-1, CODE-2, CODE-3, DATA-1, DATA-2, GROW-1
-### ⚠️ Gap rilevato
-- **INFRA-2 (backup Supabase + health-check periodico) NON consegnato** dalla Wave 1 (assente dall'handoff del chip). Re-immesso in backlog: è l'item di affidabilità complementare a OBS-1 (causa-radice incidente pausa). **Da pianificare.**
+### Gap rilevato → poi CHIUSO
+- **INFRA-2 (backup Supabase + health-check periodico)** non consegnato dalla Wave 1 (assente dall'handoff). Inizialmente re-immesso in backlog → **poi CHIUSO** su chiarimento dello sponsor: progetto migrato a **Supabase Pro** (backup giornalieri automatici + restore self-service; i progetti Pro **non vanno in pausa** → elimina la causa-radice dell'incidente). La metà health-check/alerting era già coperta da OBS-1. Residuo: solo un dry-run opzionale del restore.
 - `PROD-1` resta rinviato (post-funnel GROW-1).
 
 ### Follow-up post-deploy (lato sponsor)
