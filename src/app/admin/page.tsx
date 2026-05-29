@@ -2,7 +2,9 @@ import Link from "next/link";
 import AdminNav from "@/components/admin/AdminNav";
 import FilterBar from "@/components/admin/FilterBar";
 import Pagination from "@/components/admin/Pagination";
+import RecentAccess from "@/components/admin/RecentAccess";
 import SubmissionsTable from "@/components/admin/SubmissionsTable";
+import { fetchRecentAudit } from "@/lib/admin/audit";
 import { filtersToQuery, parseFilters } from "@/lib/admin/filters";
 import { fetchCounts, fetchSubmissions, isConfigError } from "@/lib/admin/queries";
 import { requireAdmin } from "@/lib/admin/session";
@@ -102,7 +104,7 @@ export default async function AdminPage({
 }: {
   searchParams: SearchParams;
 }) {
-  await requireAdmin();
+  await requireAdmin("/admin");
   const filters = parseFilters(await searchParams);
 
   let data: PageData | null = null;
@@ -120,6 +122,10 @@ export default async function AdminPage({
     };
   }
 
+  // SEC-3: mini-vista "ultimi accessi". Mai bloccante (ritorna [] sui fallimenti,
+  // es. tabella non ancora creata).
+  const recentAudit = await fetchRecentAudit(8);
+
   return (
     <>
       <AdminNav />
@@ -135,6 +141,10 @@ export default async function AdminPage({
             message={error?.message ?? "Errore sconosciuto."}
           />
         )}
+
+        <div className="mt-6">
+          <RecentAccess rows={recentAudit} />
+        </div>
       </main>
     </>
   );

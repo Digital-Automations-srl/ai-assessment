@@ -5,12 +5,14 @@ import {
   fetchExportRows,
   isConfigError,
 } from "@/lib/admin/queries";
+import { clientMetaFromHeaders, recordAudit } from "@/lib/admin/audit";
 
 // GET /api/admin/export?<filtri> → CSV del set filtrato.
 // Auth garantita dal proxy su /api/admin/* (route non esente come il login).
 export async function GET(req: NextRequest) {
   const params = Object.fromEntries(req.nextUrl.searchParams.entries());
   const filters = parseFilters(params);
+  const { ip, userAgent } = clientMetaFromHeaders(req.headers);
 
   try {
     const { rows, capped, total } = await fetchExportRows(filters);
@@ -20,6 +22,18 @@ export async function GET(req: NextRequest) {
 
     // YYYY-MM-DD per il nome file (UTC, sufficiente per un export).
     const day = new Date().toISOString().slice(0, 10);
+
+    // Audit: l'export e' un'estrazione di PII → tracciamo conteggi (NO termine
+    // di ricerca/filtri PII), per sapere chi ha esportato cosa e quando.
+    await recordAudit({
+      event: "export",
+      outcome: "ok",
+      path: "/api/admin/export",
+      method: "GET",
+      ip,
+      userAgent,
+      detail: { rows: rows.length, total, capped },
+    });
 
     if (capped) {
       // Niente troncamenti silenziosi: lo segnaliamo (header + log senza PII).

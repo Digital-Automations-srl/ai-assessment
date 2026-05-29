@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
 import { ADMIN_COOKIE } from "@/lib/admin/auth";
+import { clientMetaFromHeaders, recordAudit } from "@/lib/admin/audit";
 
 // POST → invalida il cookie di sessione.
-export async function POST() {
+export async function POST(req: Request) {
+  const { ip, userAgent } = clientMetaFromHeaders(req.headers);
+  await recordAudit({
+    event: "logout",
+    outcome: "ok",
+    path: "/api/admin/logout",
+    method: "POST",
+    ip,
+    userAgent,
+  });
+
   const res = NextResponse.json({ ok: true });
   res.cookies.set(ADMIN_COOKIE, "", {
     httpOnly: true,

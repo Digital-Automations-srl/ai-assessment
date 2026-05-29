@@ -138,7 +138,7 @@ function StatsView({ stats }: { stats: AdminStats & { capped: boolean } }) {
 }
 
 export default async function AdminStatsPage() {
-  await requireAdmin();
+  await requireAdmin("/admin/stats");
 
   let stats: (AdminStats & { capped: boolean }) | null = null;
   let error: { config: boolean; message: string } | null = null;
