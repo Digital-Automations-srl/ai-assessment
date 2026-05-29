@@ -54,8 +54,8 @@ Toccano integrazioni esterne (Encharge/CRM/AWS SES) o l'ingaggio proattivo del c
 
 #### Decisioni Wave 2 (2026-05-29 sera)
 - ❌ **GROW-3 — ABBANDONATO** (2026-05-29): la generazione PDF si è rivelata troppo complessa; sponsor ha rinunciato e bloccato la sessione (nessuna traccia git lasciata). PRD rimosso. Il report resta consultabile a schermo. *Eventuale ripensamento futuro: valutare un servizio esterno HTML→PDF invece di react-pdf.*
-- 🟢 **Funnel Fase 0 — VERIFICATA, pronta al merge** (branch `claude/funnel-fase0`): **teaser di curiosità** sui risultati (conteggio rischi compliance + asse più debole, senza amputare lo scorecard) + **eventi diagnostici** (`get_report_clicked`, `results_scroll_50/90`, `lead_form_abandoned`). Gate PM verde (build/lint, test 175/175). Da `docs/FUNNEL-GATING-ANALYSIS.md`.
-- 📏 **Misurazione**: no A/B (traffico basso); teaser a tutti, confronto **pre/post** su **R1** (già da GROW-1) + nuovi eventi. Annotare la data di rilascio al merge. **PROD-3** resta in attesa, stessa dipendenza-dati.
+- ✅ **Funnel Fase 0 — IN PRODUZIONE** (merge `fef8533`, deploy 2026-05-29): **teaser di curiosità** sui risultati (conteggio rischi compliance non-verdi + asse più debole, senza amputare lo scorecard) + **eventi diagnostici** (`get_report_clicked`, `results_scroll_50/90`, `lead_form_abandoned`). Gate PM verde (build/lint, test 175/175).
+- 📏 **Misurazione**: no A/B. ⚠️ baseline "pre-teaser" quasi inesistente (GROW-1 e teaser rilasciati lo **stesso giorno**) → l'effetto isolato del teaser non sarà attribuibile con pulizia; si leggeranno **R1 + eventi in assoluto** d'ora in avanti (gli eventi diagnostici dicono *dove* cade l'utente). **PROD-3** resta in attesa, stessa dipendenza-dati.
 - ⛔ **INFRA-3 — BLOCCATO** (dipendenza esterna): non quick-win per noi, richiede **accesso AWS via ufficio tecnico** (config SES→SNS). Da girare all'ufficio tecnico quando si vuole procedere.
 - ⏸️ **PROD-3 — IN ATTESA DATI**: decidere *dopo* qualche giorno di funnel GROW-1 (quantificare il drop-off post-risultati) + decisione consenso/GDPR. Stessa logica del rinvio di PROD-1.
 

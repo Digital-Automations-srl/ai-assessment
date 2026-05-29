@@ -35,10 +35,10 @@
   - **Wave 2** (opzionale) — decisioni 2026-05-29: ⛔ **INFRA-3 BLOCCATO** (serve accesso AWS via ufficio tecnico); ⏸️ **PROD-3 IN ATTESA** dati funnel + consenso. Restano: GROW-2 nurturing Encharge, GROW-6 CRM/sync, PROD-2 consenso/GDPR, GROW-4 benchmark, GROW-5 i18n.
 
 ## Sessioni operative — esito 2026-05-29
-- 🟢 **Funnel Fase 0** (branch `claude/funnel-fase0`, pushato): **VERIFICATA in PM** — build/lint ok, test **175/175**, diff fedele (scorecard intatto, `Report.tsx` non toccato). Handoff: `.claude/questions/FUNNEL-FASE0_HANDOFF.md` (nel branch). **Pronta al merge** (manca solo l'OK sponsor sul merge→deploy + scelta su come contare i "rischi"). Worktree: `.claude/worktrees/funnel-fase0` (rimuovere dopo il merge).
-  - ⚙️ **Decisione aperta**: il teaser conta come "rischi di conformità" le aree **non verdi (rosse+gialle)**; per sole-rosse è un 1-liner in `page.tsx` (`c.color === "red"`).
-- ❌ **GROW-3 PDF**: **ABBANDONATO** (PDF troppo complesso; sponsor ha bloccato la sessione). Nessun branch/worktree/residuo git. PRD rimosso. Vedi matrice per eventuale ripensamento (servizio esterno HTML→PDF).
-- 🧹 Igiene: aggiunto `.claude/worktrees/` a `.gitignore` (le worktree dei chip non devono finire nello status di main).
+- ✅ **Funnel Fase 0 — IN PRODUZIONE** (merge `fef8533`, deploy 2026-05-29): teaser di curiosità sui risultati (rischi non-verdi + asse più debole, scorecard intatto) + eventi `get_report_clicked`/`results_scroll_50/90`/`lead_form_abandoned`. Gate PM verde (build/lint, test 175/175). Branch + worktree rimossi. Handoff storico in `.claude/questions/FUNNEL-FASE0_HANDOFF.md` (sul main).
+- ❌ **GROW-3 PDF — ABBANDONATO** (PDF troppo complesso; sponsor ha bloccato la sessione). Nessun residuo git. PRD rimosso. Eventuale ripensamento: servizio esterno HTML→PDF (vedi matrice).
+- 🧹 Igiene: `.claude/worktrees/` aggiunto a `.gitignore` **e** agli ignore di ESLint (`eslint.config.mjs`) — le worktree annidate dei chip facevano esplodere `npm run lint` da root.
+- 📏 **Da fare tra ~1-2 settimane**: leggere R1 (`lead_form_viewed/results_viewed`) + nuovi eventi su Plausible. ⚠️ baseline pre-teaser quasi assente (GROW-1+teaser stesso giorno) → leggere in assoluto, non come delta del teaser. Tema unico con PROD-3.
 
 ## Sessioni operative aperte
 - ✅ Nessuna. Wave 1 mergiata e branch/worktree ripuliti (resta solo `main`).

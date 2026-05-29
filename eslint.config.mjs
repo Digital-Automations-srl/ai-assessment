@@ -13,6 +13,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "docs/**",
+    // Worktree isolate dei chip operativi: contengono copie del repo + .next
+    // generato → non vanno mai linttate dal root (falsi positivi a migliaia).
+    ".claude/worktrees/**",
   ]),
 ]);
 
