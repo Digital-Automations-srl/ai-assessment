@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import type { AxisResult, AxisKey } from "@/lib/types";
 import SpiderChart from "./SpiderChart";
 import { getTargetScore } from "@/lib/scoring";
+import { track, trackOnce } from "@/lib/plausible";
 
 interface ResultsProps {
   overallScore: number;
@@ -11,6 +13,14 @@ interface ResultsProps {
   overallMessage: string;
   axisResults: AxisResult[];
   onGetReport: () => void;
+  /**
+   * Funnel Fase 0 — teaser di curiosità (no PII). Numero di aree compliance con
+   * un gap (non verdi) e nome dell'asse più debole. Solo conteggio/nome: NON
+   * rivelano l'interpretazione, che resta gated nel report. Opzionali: senza
+   * dati il teaser non viene mostrato.
+   */
+  complianceRiskCount?: number;
+  weakestAxisLabel?: string;
 }
 
 export default function Results({
@@ -20,7 +30,31 @@ export default function Results({
   overallMessage,
   axisResults,
   onGetReport,
+  complianceRiskCount = 0,
+  weakestAxisLabel = "",
 }: ResultsProps) {
+  // Funnel Fase 0 — eventi diagnostici di scroll sulla pagina risultati.
+  // trackOnce ⇒ una sola emissione per soglia per sessione. Misura la
+  // percentuale di pagina vista (scroll + viewport) / altezza documento.
+  useEffect(() => {
+    const measure = () => {
+      const doc = document.documentElement;
+      const total = doc.scrollHeight;
+      if (total <= 0) return;
+      const seen = window.scrollY + window.innerHeight;
+      const pct = seen / total;
+      if (pct >= 0.5) trackOnce("results_scroll_50");
+      if (pct >= 0.9) trackOnce("results_scroll_90");
+    };
+    window.addEventListener("scroll", measure, { passive: true });
+    // Misura iniziale: leggere scrollHeight forza il layout, quindi è
+    // accurata già qui. Copre le pagine corte in cui non serve scrollare
+    // (l'utente vede comunque CTA/fondo pagina).
+    measure();
+    return () => window.removeEventListener("scroll", measure);
+  }, []);
+
+  const showTeaser = complianceRiskCount > 0 || weakestAxisLabel !== "";
   const chartData = axisResults.reduce(
     (acc, r) => {
       acc[r.key] = r.score;
@@ -147,10 +181,56 @@ export default function Results({
         </p>
       </div>
 
+      {/* Teaser di curiosità (Funnel Fase 0) — apre il loop senza rivelare
+          l'interpretazione: solo conteggio rischi + nome asse + framing del
+          report come piano d'azione. NON sostituisce nulla di ciò che è sopra. */}
+      {showTeaser && (
+        <div
+          className="mt-8 rounded-xl border p-5"
+          style={{ borderColor: "#E09900", backgroundColor: "#FFF8EC" }}
+        >
+          <p className="text-sm font-bold" style={{ color: "#004172" }}>
+            Nel report gratuito: il tuo piano d&apos;azione personalizzato
+          </p>
+          <ul className="mt-3 space-y-2">
+            {complianceRiskCount > 0 && (
+              <li className="flex items-start gap-2 text-sm" style={{ color: "#333" }}>
+                <span aria-hidden="true">🔒</span>
+                <span>
+                  <strong>{complianceRiskCount}</strong>{" "}
+                  {complianceRiskCount === 1
+                    ? "rischio di conformità rilevato"
+                    : "rischi di conformità rilevati"}{" "}
+                  da analizzare
+                </span>
+              </li>
+            )}
+            {weakestAxisLabel !== "" && (
+              <li className="flex items-start gap-2 text-sm" style={{ color: "#333" }}>
+                <span aria-hidden="true">🎯</span>
+                <span>
+                  Il tuo punto più debole: «<strong>{weakestAxisLabel}</strong>»,
+                  con le azioni concrete per rafforzarlo
+                </span>
+              </li>
+            )}
+          </ul>
+          <p className="mt-3 text-xs" style={{ color: "#666" }}>
+            Il report aggiunge rischi, opportunità e prossimi passi su misura per
+            la tua azienda. Lo ricevi gratis via email.
+          </p>
+        </div>
+      )}
+
       {/* CTA */}
       <div className="mt-8 text-center">
         <button
-          onClick={onGetReport}
+          onClick={() => {
+            // Funnel Fase 0 — click sulla CTA verso il form (distingue
+            // "non interessato" da "non ha visto la CTA").
+            track("get_report_clicked");
+            onGetReport();
+          }}
           className="cursor-pointer rounded-lg px-10 py-4 text-lg font-bold text-white transition-colors"
           style={{ backgroundColor: "#016FC0" }}
           onMouseEnter={(e) =>

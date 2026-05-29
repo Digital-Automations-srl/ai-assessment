@@ -219,6 +219,89 @@ describe("T32 – Results component renders correctly", () => {
   });
 });
 
+// ─── T32b: Results curiosity teaser (Funnel Fase 0) ────────────────────
+describe("T32b – Results curiosity teaser", () => {
+  const axisResults = AXES.map((a) => ({
+    key: a.key,
+    label: a.label,
+    formal: a.formal,
+    score: 3.0,
+    levelLabel: "In costruzione",
+    levelColor: "#ca8a04",
+  }));
+
+  const baseProps = {
+    overallScore: 3.0,
+    overallLabel: "In costruzione",
+    overallColor: "#ca8a04",
+    overallMessage: "Test message",
+    axisResults,
+    onGetReport: () => {},
+  };
+
+  it("shows compliance risk count and weakest axis name (plural)", () => {
+    render(
+      <Results {...baseProps} complianceRiskCount={3} weakestAxisLabel="Conformità" />
+    );
+    expect(screen.getByText(/piano d'azione personalizzato/i)).toBeInTheDocument();
+    expect(screen.getByText(/rischi di conformità rilevati/i)).toBeInTheDocument();
+    expect(screen.getByText(/punto più debole/i)).toBeInTheDocument();
+    // Il nome dell'asse compare nel teaser (oltre che nella tabella).
+    expect(screen.getAllByText(/Conformità/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("uses singular wording for a single risk", () => {
+    render(
+      <Results {...baseProps} complianceRiskCount={1} weakestAxisLabel="Processi" />
+    );
+    expect(screen.getByText(/rischio di conformità rilevato/i)).toBeInTheDocument();
+  });
+
+  it("hides the risk line when count is 0 but still shows weakest axis", () => {
+    render(
+      <Results {...baseProps} complianceRiskCount={0} weakestAxisLabel="Processi" />
+    );
+    expect(screen.queryByText(/di conformità rilevat/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/punto più debole/i)).toBeInTheDocument();
+  });
+
+  it("renders no teaser when no teaser data is provided", () => {
+    render(<Results {...baseProps} />);
+    expect(screen.queryByText(/piano d'azione personalizzato/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/punto più debole/i)).not.toBeInTheDocument();
+  });
+
+  it("does NOT remove the score badge, chart or score table when teaser is shown", () => {
+    const { container } = render(
+      <Results {...baseProps} complianceRiskCount={3} weakestAxisLabel="Conformità" />
+    );
+    // Punteggio complessivo
+    expect(container.querySelector(".text-5xl")!.textContent).toBe("3.0");
+    // Grafico ragno (SVG) presente
+    expect(container.querySelector("svg")).toBeInTheDocument();
+    // Tabella dei 6 punteggi: tutte le etichette presenti
+    for (const a of axisResults) {
+      expect(screen.getAllByText(a.label).length).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("calls onGetReport when the CTA is clicked", () => {
+    let called = false;
+    render(
+      <Results
+        {...baseProps}
+        complianceRiskCount={3}
+        weakestAxisLabel="Conformità"
+        onGetReport={() => {
+          called = true;
+        }}
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: /report/i }));
+    expect(called).toBe(true);
+  });
+});
+
 // ─── T33: LeadForm validation ──────────────────────────────────────────
 describe("T33 – LeadForm validation", () => {
   it("submit button disabled when form empty", () => {

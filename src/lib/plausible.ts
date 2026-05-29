@@ -20,3 +20,15 @@ export function track(event: string, props?: PlausibleProps): void {
     // Telemetria best-effort: non deve mai rompere la UX.
   }
 }
+
+// Eventi che vanno emessi al massimo una volta per caricamento di pagina
+// ("per sessione": il set si azzera a ogni reload, coerente con il
+// submission_token effimero). Usato per le soglie di scroll dei risultati e
+// per lead_form_abandoned, che non devono ripetersi.
+const firedOnce = new Set<string>();
+
+export function trackOnce(event: string, props?: PlausibleProps): void {
+  if (firedOnce.has(event)) return;
+  firedOnce.add(event);
+  track(event, props);
+}

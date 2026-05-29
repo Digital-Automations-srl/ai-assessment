@@ -208,6 +208,17 @@ export default function QuizPage() {
       ? computeResults()
       : null;
 
+  // Funnel Fase 0 — dati derivati per il teaser di curiosità sui risultati
+  // (no nuovo stato, no PII): conteggio aree compliance con un gap (non verdi)
+  // e nome dell'asse col punteggio più basso. Solo numero/nome: NON rivelano
+  // l'interpretazione, che resta nel report gated.
+  const complianceRiskCount = r
+    ? r.compliance.filter((c) => c.color !== "green").length
+    : 0;
+  const weakestAxisLabel = r
+    ? r.axisResults.reduce((min, a) => (a.score < min.score ? a : min)).label
+    : "";
+
   return (
     <>
       <Header />
@@ -261,6 +272,8 @@ export default function QuizPage() {
             overallColor={r.overallColor}
             overallMessage={r.overallMessage}
             axisResults={r.axisResults}
+            complianceRiskCount={complianceRiskCount}
+            weakestAxisLabel={weakestAxisLabel}
             onGetReport={() => {
               track("lead_form_viewed");
               setStep("lead-form");

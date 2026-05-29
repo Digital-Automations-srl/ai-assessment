@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { LeadData } from "@/lib/types";
+import { trackOnce } from "@/lib/plausible";
 
 interface LeadFormProps {
   onSubmit: (data: LeadData) => void;
@@ -9,6 +10,22 @@ interface LeadFormProps {
 }
 
 export default function LeadForm({ onSubmit, isSubmitting }: LeadFormProps) {
+  // Funnel Fase 0 — abbandono form: l'utente ha aperto il form
+  // (lead_form_viewed già emesso) ed esce senza inviare. Si emette all'uscita
+  // dalla pagina (pagehide: chiusura tab, refresh, back del browser);
+  // submittedRef evita il falso positivo quando si invia e si va al report.
+  // trackOnce ⇒ una sola emissione. Niente PII. NB: non emettiamo sullo
+  // smontaggio del componente per non incappare nel doppio-invoke di
+  // React Strict Mode (dev) — in-app l'unica uscita dal form è il submit.
+  const submittedRef = useRef(false);
+  useEffect(() => {
+    const abandon = () => {
+      if (!submittedRef.current) trackOnce("lead_form_abandoned");
+    };
+    window.addEventListener("pagehide", abandon);
+    return () => window.removeEventListener("pagehide", abandon);
+  }, []);
+
   const [form, setForm] = useState<LeadData>({
     nome: "",
     cognome: "",
@@ -35,6 +52,9 @@ export default function LeadForm({ onSubmit, isSubmitting }: LeadFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isValid && !isSubmitting) {
+      // Invio effettivo: non è abbandono anche se lo smontaggio del form
+      // (passaggio al report) attiverà il cleanup dell'effetto sopra.
+      submittedRef.current = true;
       onSubmit(form);
     }
   };
