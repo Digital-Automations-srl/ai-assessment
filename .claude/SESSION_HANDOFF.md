@@ -18,9 +18,11 @@
 - `submissions`: **25 lead reali** (periodo 16/04–28/05). I dati di test/interni sono stati rimossi; i lead persi durante la pausa Supabase sono stati **recuperati dalle email di notifica**.
 - ⚠️ `ai_usage` contiene il **ruolo** del rispondente (non l'uso-AI) → da rietichettare in dashboard.
 
-## In corso (workflow background)
-- **`dashboard-v2-redesign`** (run `wf_95641af1-fe9`, task `wn2fddnzz`): panel 4 esperti (BI/strategia/dataviz/dominio) → user stories + spec → implementazione su branch **`claude/dashboard-v2`** → verifica per story → debug loop.
-- **Al termine (PM)**: smoke-test live (sandbox-off) → **far vedere allo sponsor un preview** (soddisfazione soggettiva) → poi merge su `main`. NON mergiare in prod senza ok visivo dello sponsor.
+## Dashboard v2 — IN PRODUZIONE (deploy 2026-05-29, main `d88269e`)
+- Ridisegno via workflow multi-agente (10 user story, 150 test verdi). Novità: lead scoring **hot/warm/cold** + colonne Priorità/Giorni/Gap/Compliance; preset "Segmenti"; heatmap conformità di mercato; heatmap assi×settore; funnel + maturità per mese; executive summary nel dettaglio; filtro ruolo; KPI board; export CSV arricchito. Logica derivata in `src/lib/admin/lead-scoring.ts` (puro, testato). Mock dietro `ADMIN_MOCK=1`.
+- Lo sponsor ha scelto "mergia e basta" → verifica diretta in prod + iterazione se serve.
+- ⚠️ **Follow-up dati**: i 24 lead recuperati hanno `answers` con chiave `ruolo` invece di `X3` → il filtro/stats "per ruolo" non li include (le altre dimensioni — settore/dimensione/assi/compliance — usano le colonne e funzionano). Fix: UPDATE answers→X3.
+- ⚠️ **Chiarimento**: il RUOLO del rispondente è `answers['X3']`, NON `ai_usage` (= "uso AI dichiarato"). Correggere eventuali note residue.
 
 ## Follow-up aperti
 - Verificare `/admin` in **produzione** (login con la password **intera**, incluso `#`).

@@ -32,8 +32,12 @@
 - RLS abilitata (avviso CRITICO "RLS Disabled" risolto). Avviso residuo "RLS Policy Always True" = policy insert anonimo (atteso). Avvisi GraphQL "object visible" = cosmetici (RLS protegge).
 - Password **mai esposta** nel transcript/git (solo lunghezza/struttura). Residui locali in `/tmp` (backup secret + PII) **eliminati**.
 
-### Avviato (workflow background)
-- **`dashboard-v2-redesign`** (run `wf_95641af1-fe9`): panel esperti → user stories + spec → implementazione su `claude/dashboard-v2` → verify → debug. **Al termine**: smoke-test live + preview allo sponsor → merge su ok.
+### Dashboard v2 (workflow multi-agente) → IN PRODUZIONE
+- Workflow `dashboard-v2-redesign` (run `wf_95641af1-fe9`, 19 agenti, ~34 min): panel 4 esperti (BI/strategia/dataviz/dominio) → **10 user story** + spec → implementazione → verify (8/10 + 2 fixate) → **150 test verdi**. Novità: lead scoring tier hot/warm/cold, preset "Segmenti", heatmap conformità + assi×settore, funnel/maturità per mese, executive summary nel dettaglio, KPI board, export arricchito; logica derivata in `src/lib/admin/lead-scoring.ts` (puro). Niente nuove dipendenze.
+- **Collisione working-tree ripetuta** (un agente ha scritto in-place nonostante l'isolamento): ripulita, lavoro salvo sul branch. Lezione ribadita: chip/agenti in **worktree isolata**.
+- Sponsor: "mergia e basta" → FF merge su `main` + **deploy prod (`d88269e`)**. Branch v2 eliminato.
+- **Correzione modello**: il RUOLO è `answers['X3']`, NON `ai_usage` (=uso AI). CLAUDE.md aggiornato dal merge.
+- **Follow-up dati**: i 24 lead recuperati hanno `answers.ruolo` invece di `answers.X3` → fix per far funzionare il filtro "per ruolo" anche sullo storico.
 
 ### Lezione di processo
 - I chip operativi del 29/05 sono girati **in-place** sulla stessa working dir → collisione col branch della sessione PM. **D'ora in poi: chip/sessioni operative in worktree ISOLATA.**
