@@ -24,6 +24,9 @@
 - **Follow-up dati RISOLTI** (UPDATE in DB): i 24 recuperati ora hanno `answers.X1/X2/X3` (filtro "per ruolo" ok) e `compliance` arricchita col testo canonico di `scoring.ts`.
 - ⚠️ **Chiarimento**: il RUOLO del rispondente è `answers['X3']`, NON `ai_usage` (= "uso AI dichiarato"). Correggere eventuali note residue.
 
+## Backlog prioritizzato
+- 📋 **Matrice opportunità** (fattibilità/impatto/fit, 20 voci, piano a 2 wave: Wave 1 tecnica interna · Wave 2 opzionale tool esterni/proattivo cliente): **`docs/IMPROVEMENT-MATRIX.md`**. Fondante: **OBS-1** (observability — causa-radice dell'incidente pausa).
+
 ## Follow-up aperti
 - Verificare `/admin` in **produzione** (login con la password **intera**, incluso `#`).
 - **Vercel**: confermare `ADMIN_PASSWORD` = valore completo (Vercel letterale; in locale `.env.local` va quotato per via del `#`).
