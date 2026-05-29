@@ -57,15 +57,18 @@ function polygonPoints(
 }
 
 export default function SpiderChart({ data, targetData, size = 420 }: SpiderChartProps) {
-  // Add padding around the chart for labels
-  const padding = 85;
+  // Padding around the chart for labels. Labels wrap one word per line and are
+  // center-aligned, so each line is narrow — far less horizontal room is needed
+  // than with single-line labels, letting the chart breathe larger in its box.
+  const padding = 52;
   const vw = size + padding * 2;
   const vh = size + padding * 2;
   const cx = vw / 2;
   const cy = vh / 2;
   const maxRadius = size * 0.42;
   const total = AXES_ORDER.length;
-  const labelOffset = 32;
+  const labelOffset = 40;
+  const labelLineHeight = 16;
 
   // Current data polygon (amber)
   const dataPoints = AXES_ORDER.map((key, i) => {
@@ -190,26 +193,29 @@ export default function SpiderChart({ data, targetData, size = 420 }: SpiderChar
         />
       ))}
 
-      {/* Labels */}
+      {/* Labels — one word per line, centered and vertically balanced on the
+          label anchor point so multi-word labels never run off the canvas. */}
       {AXES_ORDER.map((key, i) => {
         const [x, y] = getPoint(cx, cy, maxRadius + labelOffset, i, total);
-        const angle = (2 * Math.PI * i) / total - Math.PI / 2;
-        const isRight = Math.cos(angle) > 0.01;
-        const isLeft = Math.cos(angle) < -0.01;
-        const anchor = isRight ? "start" : isLeft ? "end" : "middle";
+        const words = AXIS_LABELS[key].split(" ");
+        const firstDy = -((words.length - 1) / 2) * labelLineHeight;
 
         return (
           <text
             key={`label-${key}`}
             x={x}
             y={y}
-            fontSize="13"
-            fontWeight="600"
+            fontSize="14"
+            fontWeight="700"
             fill="#004172"
-            textAnchor={anchor}
+            textAnchor="middle"
             dominantBaseline="central"
           >
-            {AXIS_LABELS[key]}
+            {words.map((word, li) => (
+              <tspan key={li} x={x} dy={li === 0 ? firstDy : labelLineHeight}>
+                {word}
+              </tspan>
+            ))}
           </text>
         );
       })}

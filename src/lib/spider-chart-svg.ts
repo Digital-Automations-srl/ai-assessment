@@ -35,6 +35,14 @@ function getFont(): opentype.Font {
   return cachedFont;
 }
 
+// The embedded Inter is the Regular master of a variable font, and opentype.js
+// 1.3.4 has no variable-instancing API — so we can't render a true 700 weight.
+// Since text is emitted as vector <path> (not <text>), a font-weight attribute
+// has no effect either. We synthesize bold by stroking the glyph paths with the
+// fill color: stroke width is a fraction of the font size, so the boldness stays
+// consistent regardless of the final PNG scale. ~0.055em approximates Inter Bold.
+const BOLD_STROKE_RATIO = 0.055;
+
 /** Render text as SVG <path> — no font needed at PNG render time */
 function textToPath(
   text: string,
@@ -43,12 +51,9 @@ function textToPath(
   fontSize: number,
   fill: string,
   anchor: "start" | "middle" | "end" = "start",
-  fontWeight: "normal" | "bold" = "bold",
+  fontWeight: "normal" | "bold" = "normal",
 ): string {
   const font = getFont();
-  // opentype.js doesn't have weight variants in variable font easily,
-  // so we use the same font for all weights
-  void fontWeight;
 
   // Measure width for alignment
   const width = font.getAdvanceWidth(text, fontSize);
@@ -58,8 +63,13 @@ function textToPath(
 
   const path = font.getPath(text, adjustedX, y, fontSize);
   const svgPath = path.toSVG(2);
-  // path.toSVG returns <path d="..."/> — we need to add fill
-  return svgPath.replace('<path', `<path fill="${fill}"`);
+  // path.toSVG returns <path d="..."/> — add fill, plus a same-color stroke to
+  // fake bold weight when requested (true weight instancing isn't available).
+  const boldAttrs =
+    fontWeight === "bold"
+      ? ` stroke="${fill}" stroke-width="${(fontSize * BOLD_STROKE_RATIO).toFixed(2)}" stroke-linejoin="round" stroke-linecap="round"`
+      : "";
+  return svgPath.replace("<path", `<path fill="${fill}"${boldAttrs}`);
 }
 
 function getPoint(cx: number, cy: number, radius: number, index: number, total: number): [number, number] {
@@ -78,14 +88,14 @@ export function generateSpiderChartSVG(
   targetData: Record<AxisKey, number>,
 ): string {
   const size = 560;
-  const padding = 90;
+  const padding = 56;
   const vw = size + padding * 2;
   const vh = size + padding * 2 + 50;
   const cx = vw / 2;
   const cy = (size + padding * 2) / 2;
   const maxRadius = size * 0.40;
   const total = AXES_ORDER.length;
-  const labelOffset = 38;
+  const labelOffset = 40;
 
   // Grid hexagons
   let grid = "";
@@ -120,14 +130,17 @@ export function generateSpiderChartSVG(
   let currentSvg = `<polygon points="${dPts.map(p => p.join(",")).join(" ")}" fill="${DA_AMBER}" fill-opacity="0.20" stroke="${DA_AMBER}" stroke-width="2.5" stroke-linejoin="round"/>`;
   dPts.forEach(([x, y]) => { currentSvg += `<circle cx="${x}" cy="${y}" r="5" fill="${DA_AMBER}" stroke="white" stroke-width="2"/>`; });
 
-  // Axis labels as paths
+  // Axis labels as paths — one word per line, centered on the label anchor and
+  // vertically balanced, mirroring the web chart so the two stay coherent.
   let labels = "";
+  const labelLineHeight = 18;
   AXES_ORDER.forEach((key, i) => {
     const [x, y] = getPoint(cx, cy, maxRadius + labelOffset, i, total);
-    const angle = (2 * Math.PI * i) / total - Math.PI / 2;
-    const cosA = Math.cos(angle);
-    const anchor: "start" | "middle" | "end" = cosA > 0.01 ? "start" : cosA < -0.01 ? "end" : "middle";
-    labels += textToPath(AXIS_LABELS[key], x, y + 5, 14, DA_NAVY, anchor);
+    const words = AXIS_LABELS[key].split(" ");
+    const firstY = y + 5 - ((words.length - 1) / 2) * labelLineHeight;
+    words.forEach((word, li) => {
+      labels += textToPath(word, x, firstY + li * labelLineHeight, 14, DA_NAVY, "middle", "bold");
+    });
   });
 
   // Legend as paths
