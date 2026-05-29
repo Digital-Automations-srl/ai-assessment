@@ -1,4 +1,4 @@
-import type { AxisKey, ComplianceResult } from "@/lib/types";
+import type { AxisKey, BehaviorSignals, ComplianceResult } from "@/lib/types";
 
 // Stato di una submission (vedi migrazione assessment_capture):
 //  - 'anonymous'  → record creato allo step "results" senza PII (track-result)
@@ -35,10 +35,17 @@ export interface SubmissionRow extends AxisScoreColumns {
   answers: Record<string, string> | null;
   compliance: ComplianceResult[] | null;
   quiz_answers: Record<string, { letter: string; score: number }> | null;
+  behavior: BehaviorSignals | null;
 
   submission_token: string | null;
   consenso: boolean | null;
   consenso_marketing: boolean | null;
+
+  // DATA-1 — attribuzione sorgente (storici → NULL).
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
 }
 
 // Sottoinsieme di colonne usato nella tabella (lista). Esteso con i campi che
@@ -60,11 +67,12 @@ export type SubmissionListItem = Pick<
   | "overall_label"
   | "consenso_marketing"
   | "compliance"
+  | "behavior"
   | `score_${AxisKey}`
 >;
 
 export const LIST_COLUMNS =
-  "id,created_at,completed_at,status,nome,email,azienda,settore,dipendenti,overall_score,overall_label,consenso_marketing,compliance,score_conformita,score_processi,score_utilizzo,score_autonomia,score_protezione,score_tecnologia";
+  "id,created_at,completed_at,status,nome,email,azienda,settore,dipendenti,overall_score,overall_label,consenso_marketing,compliance,behavior,score_conformita,score_processi,score_utilizzo,score_autonomia,score_protezione,score_tecnologia";
 
 // ── Facet per i filtri (deterministici: vengono dalle domande di contesto,
 // non da una query DISTINCT — cosi' i dropdown funzionano anche a DB vuoto). ──

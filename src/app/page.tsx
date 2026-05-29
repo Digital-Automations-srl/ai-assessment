@@ -3,6 +3,9 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { CONTEXT_QUESTIONS, AXES } from "@/lib/quiz-data";
 import { calculateResults } from "@/lib/scoring";
+import { pickUtm, type UtmParams } from "@/lib/utm";
+import { buildBehavior } from "@/lib/behavior";
+import { track } from "@/lib/plausible";
 import type { LeadData } from "@/lib/types";
 import Header from "@/components/quiz/Header";
 import Landing from "@/components/quiz/Landing";
@@ -42,6 +45,28 @@ export default function QuizPage() {
   const submissionTokenRef = useRef<string | null>(null);
   const trackedRef = useRef(false);
 
+  // DATA-1: cattura i parametri utm_* dal primo load (prima di qualsiasi
+  // navigazione interna), conservati in un ref e inviati con track-result e
+  // send-report per l'attribuzione sorgente del lead.
+  const utmRef = useRef<UtmParams>({});
+  useEffect(() => {
+    utmRef.current = pickUtm(new URLSearchParams(window.location.search));
+  }, []);
+
+  // DATA-2: segnali comportamentali. startTime = quiz_started (uscita landing);
+  // backClicks = click "Indietro" totali. buildBehavior li combina con i conteggi.
+  const startTimeRef = useRef<number | null>(null);
+  const backClicksRef = useRef(0);
+  const collectBehavior = useCallback(
+    () =>
+      buildBehavior({
+        quizAnswers,
+        totalTimeMs: startTimeRef.current ? Date.now() - startTimeRef.current : null,
+        backClicks: backClicksRef.current,
+      }),
+    [quizAnswers]
+  );
+
   const currentAxis = AXES[axisIndex];
 
   const computeResults = useCallback(() => {
@@ -61,6 +86,9 @@ export default function QuizPage() {
     const token = crypto.randomUUID();
     submissionTokenRef.current = token;
 
+    // GROW-1: i risultati sono mostrati.
+    track("results_viewed");
+
     const r = computeResults();
     fetch("/api/track-result", {
       method: "POST",
@@ -68,6 +96,8 @@ export default function QuizPage() {
       body: JSON.stringify({
         submissionToken: token,
         quizAnswers,
+        utm: utmRef.current,
+        behavior: collectBehavior(),
         results: {
           contextAnswers,
           axisResults: r.axisResults,
@@ -79,7 +109,7 @@ export default function QuizPage() {
     }).catch(() => {
       // Tracking anonimo best-effort: non deve mai bloccare la UX.
     });
-  }, [step, computeResults, quizAnswers, contextAnswers]);
+  }, [step, computeResults, collectBehavior, quizAnswers, contextAnswers]);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "instant" });
 
@@ -92,12 +122,14 @@ export default function QuizPage() {
   };
 
   const handleContextNext = () => {
+    track("context_completed");
     setStep("quiz");
     setAxisIndex(0);
     scrollToTop();
   };
 
   const handleContextBack = () => {
+    backClicksRef.current += 1;
     setStep("instructions");
     scrollToTop();
   };
@@ -115,6 +147,8 @@ export default function QuizPage() {
   };
 
   const handleQuizNext = () => {
+    // GROW-1: asse completato (1-based: axis_1..axis_6).
+    track(`axis_${axisIndex + 1}_completed`);
     if (axisIndex < AXES.length - 1) {
       setAxisIndex((i) => i + 1);
     } else {
@@ -124,6 +158,7 @@ export default function QuizPage() {
   };
 
   const handleQuizBack = () => {
+    backClicksRef.current += 1;
     if (axisIndex > 0) {
       setAxisIndex((i) => i - 1);
     } else {
@@ -134,6 +169,8 @@ export default function QuizPage() {
 
   // --- Lead form handler ---
   const handleLeadSubmit = async (data: LeadData) => {
+    // GROW-1: il lead ha inviato il form (evento di conversione).
+    track("lead_submitted");
     setLeadData(data);
     setIsSubmitting(true);
 
@@ -146,6 +183,8 @@ export default function QuizPage() {
           lead: data,
           submissionToken: submissionTokenRef.current,
           quizAnswers,
+          utm: utmRef.current,
+          behavior: collectBehavior(),
           results: {
             contextAnswers,
             axisResults: r.axisResults,
@@ -176,6 +215,8 @@ export default function QuizPage() {
         {step === "landing" && (
           <Landing
             onStart={() => {
+              startTimeRef.current = Date.now();
+              track("quiz_started");
               setStep("instructions");
               scrollToTop();
             }}
@@ -221,6 +262,7 @@ export default function QuizPage() {
             overallMessage={r.overallMessage}
             axisResults={r.axisResults}
             onGetReport={() => {
+              track("lead_form_viewed");
               setStep("lead-form");
               scrollToTop();
             }}

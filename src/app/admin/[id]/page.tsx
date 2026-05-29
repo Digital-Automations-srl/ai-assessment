@@ -15,8 +15,8 @@ export default async function SubmissionDetailPage({
 }: {
   params: Params;
 }) {
-  await requireAdmin();
   const { id } = await params;
+  await requireAdmin(`/admin/${id}`);
 
   let row: SubmissionRow | null = null;
   let error: { config: boolean; message: string } | null = null;

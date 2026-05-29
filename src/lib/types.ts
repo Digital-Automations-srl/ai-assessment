@@ -78,3 +78,19 @@ export interface LeadData {
   consenso: boolean;
   consensoMarketing: boolean;
 }
+
+// DATA-2 — segnali comportamentali del quiz (NON-PII). Catturati lato client e
+// storicizzati nella colonna `behavior` (jsonb). Usati come tie-break del lead
+// tier (lead-scoring.ts). Storici → null.
+export interface BehaviorSignals {
+  /** Tempo totale dal quiz_started ai risultati (ms). null se non misurato. */
+  totalTimeMs: number | null;
+  /** Domande quiz risposte (max 30). */
+  answeredCount: number;
+  /** Domande quiz non risposte (oggi sempre 0: il quiz richiede tutte le risposte). */
+  skippedCount: number;
+  /** Risposte su opzioni flaggate "Non so" (isNonSo). 0 finche' non esistono nel quiz. */
+  nonSoCount: number;
+  /** Click "Indietro" totali (contesto + assi). */
+  backClicks: number;
+}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { COLORS } from "@/lib/design-tokens";
 
 const LINKS = [
   { href: "/admin", label: "Assessment" },
@@ -27,7 +28,7 @@ export default function AdminNav() {
   return (
     <header
       className="sticky top-0 z-10 border-b border-black/5"
-      style={{ backgroundColor: "#004172" }}
+      style={{ backgroundColor: COLORS.navy }}
     >
       <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3">
         <span className="text-sm font-extrabold text-white">

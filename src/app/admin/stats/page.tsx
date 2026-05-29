@@ -10,13 +10,14 @@ import {
 } from "@/components/admin/Charts";
 import { fetchStats, isConfigError } from "@/lib/admin/queries";
 import { requireAdmin } from "@/lib/admin/session";
+import { COLORS } from "@/lib/design-tokens";
 import type { AdminStats } from "@/lib/admin/types";
 
 function Kpi({
   label,
   value,
   sub,
-  color = "#004172",
+  color = COLORS.navy,
 }: {
   label: string;
   value: string | number;
@@ -43,7 +44,7 @@ function Card({
 }) {
   return (
     <section className="rounded-2xl bg-white p-6 ring-1 ring-black/5">
-      <h2 className="mb-4 text-base font-extrabold" style={{ color: "#004172" }}>
+      <h2 className="mb-4 text-base font-extrabold" style={{ color: COLORS.navy }}>
         {title}
       </h2>
       {children}
@@ -113,7 +114,7 @@ function StatsView({ stats }: { stats: AdminStats & { capped: boolean } }) {
           <TrendChart points={stats.byMonth} />
           <p className="mt-3 text-xs text-gray-400">
             <span style={{ color: "#9ec8e8" }}>■</span> totale ·{" "}
-            <span style={{ color: "#004172" }}>■</span> completati
+            <span style={{ color: COLORS.navy }}>■</span> completati
           </p>
         </Card>
         <Card title="Conformità di mercato">
@@ -138,7 +139,7 @@ function StatsView({ stats }: { stats: AdminStats & { capped: boolean } }) {
 }
 
 export default async function AdminStatsPage() {
-  await requireAdmin();
+  await requireAdmin("/admin/stats");
 
   let stats: (AdminStats & { capped: boolean }) | null = null;
   let error: { config: boolean; message: string } | null = null;
@@ -155,7 +156,7 @@ export default async function AdminStatsPage() {
     <>
       <AdminNav />
       <main className="mx-auto max-w-7xl px-4 py-6">
-        <h1 className="mb-4 text-xl font-extrabold" style={{ color: "#004172" }}>
+        <h1 className="mb-4 text-xl font-extrabold" style={{ color: COLORS.navy }}>
           Statistiche
         </h1>
         {stats ? (

@@ -3,9 +3,21 @@ import nodemailer from "nodemailer";
 import sharp from "sharp";
 import { buildLeadEmail, buildInternalEmail } from "@/lib/email";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { buildSubmissionFields, type QuizAnswerMap } from "@/lib/submission-record";
+import {
+  buildSubmissionFields,
+  sanitizeBehavior,
+  type QuizAnswerMap,
+} from "@/lib/submission-record";
 import { generateSpiderChartSVG } from "@/lib/spider-chart-svg";
 import { getTargetScore } from "@/lib/scoring";
+import {
+  deliverWebhook,
+  logEvent,
+  newRequestId,
+  recordFailure,
+  recordSuccess,
+} from "@/lib/observability";
+import { utmColumns, type UtmParams } from "@/lib/utm";
 import type { LeadData, QuizResults, AxisKey } from "@/lib/types";
 
 function escHtml(value: string): string {
@@ -49,16 +61,41 @@ function buildDbAlertHtml(
     </div>`;
 }
 
+// Alert interno quando il webhook Encharge fallisce dopo i retry: il lead e'
+// salvato, ma il nurturing automatico non e' partito → recupero manuale.
+function buildWebhookAlertHtml(
+  lead: LeadData,
+  errorMessage: string,
+  attempts: number
+): string {
+  return `
+    <div style="font-family:Arial,sans-serif;font-size:14px;color:#333;">
+      <h2 style="color:#b91c1c;margin:0 0 8px;">Webhook Encharge fallito</h2>
+      <p>Il lead <strong>${escHtml(`${lead.nome} ${lead.cognome}`)}</strong>
+      (${escHtml(lead.email)}, ${escHtml(lead.azienda)}) e' stato salvato, ma
+      l'invio al webhook Encharge e' fallito dopo ${attempts} tentativi.
+      Aggiungere il contatto manualmente al flusso di nurturing.</p>
+      <p style="color:#666;font-size:12px;margin-top:16px;">Errore: ${escHtml(
+        errorMessage
+      )}</p>
+    </div>`;
+}
+
 export async function POST(request: NextRequest) {
+  const requestId = newRequestId();
+  const startedAt = Date.now();
   try {
     const body = await request.json();
 
-    const { lead, results, quizAnswers, submissionToken } = body as {
-      lead: LeadData;
-      results: QuizResults;
-      quizAnswers?: QuizAnswerMap;
-      submissionToken?: string;
-    };
+    const { lead, results, quizAnswers, submissionToken, utm, behavior } =
+      body as {
+        lead: LeadData;
+        results: QuizResults;
+        quizAnswers?: QuizAnswerMap;
+        submissionToken?: string;
+        utm?: UtmParams;
+        behavior?: unknown;
+      };
 
     // --- Validation ---
     if (!lead || !results) {
@@ -169,38 +206,29 @@ export async function POST(request: NextRequest) {
       }),
     ]);
 
-    // --- Send to Encharge webhook (non-blocking) ---
-    const enchargeUrl = process.env.ENCHARGE_WEBHOOK_URL;
-    if (enchargeUrl) {
-      fetch(enchargeUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: lead.email,
-          firstName: lead.nome,
-          lastName: lead.cognome,
-          company: lead.azienda,
-          phone: lead.telefono || undefined,
-          aiReadinessScore: results.overallScore,
-          aiReadinessLabel: results.overallLabel,
-        }),
-      }).catch((err) => {
-        console.error("[encharge] Webhook error:", err);
-      });
-    }
+    logEvent("send_report.email_sent", "ok", {
+      requestId,
+      recipientDomain: lead.email.split("@")[1] ?? null,
+      overallScore: results.overallScore,
+    });
 
-    // --- Persist to Supabase (AWAITED, con gestione errore esplicita) ---
-    // L'email e' gia' partita sopra: un errore DB non deve mai bloccare il
-    // report. Ma non deve nemmeno passare in silenzio → su fallimento parte un
-    // alert interno con i dati minimi per recuperare il lead a mano.
+    // --- Persist to Supabase (AWAITED, con verifica post-scrittura) ---
+    // L'email e' gia' partita: un errore DB non deve mai bloccare il report, ma
+    // non deve nemmeno passare in silenzio. La scrittura viene RILETTA per
+    // confermare che la riga sia davvero atterrata: l'incidente "pausa Supabase"
+    // dava insert riusciti-in-apparenza con host irraggiungibile. Su fallimento
+    // (errore o verifica negativa) parte un alert interno coi dati di recupero.
     if (!supabaseAdmin) {
-      console.warn(
-        "[supabase] Service role client non configurato: submission NON salvata."
-      );
+      logEvent("send_report.persist", "warn", {
+        requestId,
+        reason: "supabase_admin_unconfigured",
+      });
     } else {
       try {
         const fields = {
           ...buildSubmissionFields(results, quizAnswers),
+          ...utmColumns(utm),
+          behavior: sanitizeBehavior(behavior),
           nome: lead.nome,
           cognome: lead.cognome,
           email: lead.email,
@@ -215,6 +243,7 @@ export async function POST(request: NextRequest) {
 
         // C — linking: se esiste un record anonimo per questo token, lo
         // promuoviamo a "completed" con i dati PII. Altrimenti inseriamo da zero.
+        let persistedId: string | null = null;
         let linked = false;
         if (submissionToken) {
           const { data, error } = await supabaseAdmin
@@ -223,40 +252,153 @@ export async function POST(request: NextRequest) {
             .eq("submission_token", submissionToken)
             .select("id");
           if (error) throw error;
-          linked = Array.isArray(data) && data.length > 0;
+          if (Array.isArray(data) && data.length > 0) {
+            linked = true;
+            persistedId = (data[0] as { id: string }).id;
+          }
         }
 
         if (!linked) {
           // Nessun record anonimo da collegare (token assente o non trovato,
           // es. track-result fallito): inserisci un record completo da zero.
-          const { error } = await supabaseAdmin
+          const { data, error } = await supabaseAdmin
             .from("submissions")
-            .insert({ ...fields, submission_token: submissionToken || null });
+            .insert({ ...fields, submission_token: submissionToken || null })
+            .select("id");
           if (error) throw error;
+          persistedId =
+            Array.isArray(data) && data.length > 0
+              ? (data[0] as { id: string }).id
+              : null;
         }
+
+        // Verifica post-scrittura: rileggi la riga appena scritta.
+        let verified = false;
+        const locator = persistedId
+          ? { col: "id", val: persistedId }
+          : submissionToken
+            ? { col: "submission_token", val: submissionToken }
+            : null;
+        if (locator) {
+          const { data, error } = await supabaseAdmin
+            .from("submissions")
+            .select("id")
+            .eq(locator.col, locator.val)
+            .maybeSingle();
+          if (error) throw error;
+          verified = !!data;
+        }
+        if (!verified) {
+          throw new Error(
+            "verifica post-scrittura fallita: riga non trovata dopo insert/update"
+          );
+        }
+
+        recordSuccess("db");
+        logEvent("send_report.persist", "ok", {
+          requestId,
+          linked,
+          submissionId: persistedId,
+        });
       } catch (dbError) {
         const dbMessage =
           dbError instanceof Error ? dbError.message : String(dbError);
-        console.error("[supabase] Insert/Update error:", dbMessage);
+        const failures = recordFailure("db");
+        logEvent("send_report.persist", "error", {
+          requestId,
+          error: dbMessage,
+          consecutiveFailures: failures,
+        });
         // Alert interno: non perdere il lead anche se il DB e' giu'.
         try {
           await transporter.sendMail({
             from,
             to: internalRecipient,
-            subject: `[ALERT] Lead NON salvato su DB - ${lead.nome} ${lead.cognome} (${lead.azienda})`,
+            subject: `[ALERT] Lead NON salvato su DB${
+              failures > 1 ? ` (${failures}° fallimento consecutivo)` : ""
+            } - ${lead.nome} ${lead.cognome} (${lead.azienda})`,
             html: buildDbAlertHtml(lead, results, dbMessage),
           });
         } catch (alertError) {
-          console.error("[supabase] Alert email also failed:", alertError);
+          logEvent("send_report.alert_email", "error", {
+            requestId,
+            error:
+              alertError instanceof Error
+                ? alertError.message
+                : String(alertError),
+          });
         }
       }
     }
 
+    // --- Encharge webhook (AWAITED, retry + backoff) ---
+    // Eseguito DOPO la persistenza (la cattura del lead e' piu' critica del
+    // nurturing). Timeout per-tentativo contenuto: in un outage prolungato di
+    // Encharge la richiesta si allunga di qualche secondo (raro) ma il report al
+    // lead e' gia' partito. Esauriti i retry → alert interno + log error.
+    const enchargeUrl = process.env.ENCHARGE_WEBHOOK_URL;
+    if (enchargeUrl) {
+      const result = await deliverWebhook(
+        enchargeUrl,
+        {
+          email: lead.email,
+          firstName: lead.nome,
+          lastName: lead.cognome,
+          company: lead.azienda,
+          phone: lead.telefono || undefined,
+          aiReadinessScore: results.overallScore,
+          aiReadinessLabel: results.overallLabel,
+        },
+        {
+          requestId,
+          channel: "encharge",
+          event: "encharge.webhook",
+          maxAttempts: 3,
+          timeoutMs: 2500,
+          baseDelayMs: 250,
+        }
+      );
+      if (!result.ok) {
+        try {
+          await transporter.sendMail({
+            from,
+            to: internalRecipient,
+            subject: `[ALERT] Webhook Encharge fallito dopo ${result.attempts} tentativi${
+              result.consecutiveFailures > 1
+                ? ` (${result.consecutiveFailures}° consecutivo)`
+                : ""
+            } - ${lead.nome} ${lead.cognome}`,
+            html: buildWebhookAlertHtml(
+              lead,
+              result.error ?? "errore sconosciuto",
+              result.attempts
+            ),
+          });
+        } catch (alertError) {
+          logEvent("encharge.alert_email", "error", {
+            requestId,
+            error:
+              alertError instanceof Error
+                ? alertError.message
+                : String(alertError),
+          });
+        }
+      }
+    }
+
+    logEvent("send_report.done", "ok", {
+      requestId,
+      durationMs: Date.now() - startedAt,
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[send-report] Error:", error);
     const message =
       error instanceof Error ? error.message : "Unknown error occurred.";
+    logEvent("send_report.error", "error", {
+      requestId,
+      error: message,
+      durationMs: Date.now() - startedAt,
+    });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

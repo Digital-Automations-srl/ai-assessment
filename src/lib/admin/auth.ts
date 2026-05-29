@@ -5,16 +5,31 @@
 //
 // Modello: password unica (env `ADMIN_PASSWORD`). Al login si firma un cookie
 // di sessione httpOnly con HMAC-SHA256; il middleware lo verifica senza DB.
-// La chiave di firma e' `ADMIN_SESSION_SECRET` se presente, altrimenti la
-// stessa `ADMIN_PASSWORD` (segreto condiviso comunque). Cambiare la password
-// invalida automaticamente tutte le sessioni esistenti.
+// La chiave di firma e' `ADMIN_SESSION_SECRET`. In PRODUZIONE e' OBBLIGATORIA:
+// il fallback su `ADMIN_PASSWORD` esiste solo in dev/test (SEC-1). Cosi' la
+// rotazione della password non invalida le sessioni e firma/credenziale restano
+// disaccoppiate.
 
 export const ADMIN_COOKIE = "da_admin_session";
 // Durata sessione: 12 ore. Oltre, si rifa' il login.
 export const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 
+/**
+ * Segreto di firma del cookie di sessione.
+ * - Se `ADMIN_SESSION_SECRET` e' presente → usalo (sempre, dev e prod).
+ * - In produzione SENZA `ADMIN_SESSION_SECRET` → LANCIA (fail-closed): meglio
+ *   bloccare l'admin che firmare sessioni con un segreto debole/accoppiato.
+ * - In dev/test → fallback su `ADMIN_PASSWORD` (o null se assente).
+ */
 function getSigningSecret(): string | null {
-  return process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || null;
+  const dedicated = process.env.ADMIN_SESSION_SECRET;
+  if (dedicated) return dedicated;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "ADMIN_SESSION_SECRET mancante in produzione: configurarlo nelle env (Vercel)."
+    );
+  }
+  return process.env.ADMIN_PASSWORD || null;
 }
 
 function bytesToB64url(bytes: Uint8Array): string {
@@ -79,7 +94,15 @@ export async function verifySession(
   token: string | undefined,
   now: number
 ): Promise<boolean> {
-  const secret = getSigningSecret();
+  let secret: string | null;
+  try {
+    secret = getSigningSecret();
+  } catch {
+    // Prod senza ADMIN_SESSION_SECRET: nessuna sessione e' valida (fail-closed).
+    // Il proxy reindirizza al login; il tentativo di login restituira' un 500
+    // di configurazione (signSession propaga l'errore).
+    return false;
+  }
   if (!secret || !token) return false;
   const dot = token.indexOf(".");
   if (dot <= 0) return false;

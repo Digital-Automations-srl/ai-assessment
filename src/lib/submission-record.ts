@@ -1,4 +1,4 @@
-import type { QuizResults, AxisKey } from "./types";
+import type { QuizResults, AxisKey, BehaviorSignals } from "./types";
 
 // Le 30 risposte complete del quiz, come tenute nello stato del client:
 // { [questionId]: { letter, score } }.
@@ -39,5 +39,33 @@ export function buildSubmissionFields(
     answers: results.contextAnswers,
     compliance: results.compliance,
     quiz_answers: quizAnswers ?? null,
+  };
+}
+
+// Numero intero finito non-negativo, o fallback. Difesa server-side: il client
+// non e' fidato (DATA-2).
+function safeInt(v: unknown, fallback = 0): number {
+  return typeof v === "number" && Number.isFinite(v) && v >= 0
+    ? Math.round(v)
+    : fallback;
+}
+
+/**
+ * Valida/normalizza i segnali comportamentali ricevuti dal client (DATA-2).
+ * Ritorna null se il payload non e' un oggetto: la colonna `behavior` resta NULL.
+ */
+export function sanitizeBehavior(raw: unknown): BehaviorSignals | null {
+  if (!raw || typeof raw !== "object") return null;
+  const b = raw as Record<string, unknown>;
+  const totalTimeMs =
+    typeof b.totalTimeMs === "number" && Number.isFinite(b.totalTimeMs) && b.totalTimeMs >= 0
+      ? Math.round(b.totalTimeMs)
+      : null;
+  return {
+    totalTimeMs,
+    answeredCount: safeInt(b.answeredCount),
+    skippedCount: safeInt(b.skippedCount),
+    nonSoCount: safeInt(b.nonSoCount),
+    backClicks: safeInt(b.backClicks),
   };
 }
