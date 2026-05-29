@@ -37,7 +37,8 @@
 - **Collisione working-tree ripetuta** (un agente ha scritto in-place nonostante l'isolamento): ripulita, lavoro salvo sul branch. Lezione ribadita: chip/agenti in **worktree isolata**.
 - Sponsor: "mergia e basta" → FF merge su `main` + **deploy prod (`d88269e`)**. Branch v2 eliminato.
 - **Correzione modello**: il RUOLO è `answers['X3']`, NON `ai_usage` (=uso AI). CLAUDE.md aggiornato dal merge.
-- **Follow-up dati**: i 24 lead recuperati hanno `answers.ruolo` invece di `answers.X3` → fix per far funzionare il filtro "per ruolo" anche sullo storico.
+- **Bug fix post-deploy** (segnalati dallo sponsor, commit `cb6e0fb`): (1) `/admin` usciva dal cap `max-w-7xl` → resa **fluida full-width**; (2) "Apri" dava **500** — `ComplianceChecklist` crashava su `COLOR_CONFIG[item.color]` per i 24 recuperati (shape `{area,stato}`) → reso robusto a entrambe le shape. Il bug era sfuggito al workflow perché testato su mock; emerso sui dati reali.
+- **Follow-up dati RISOLTI** (UPDATE in DB, no deploy): i 24 recuperati ora hanno `answers.X1/X2/X3` (filtro/stats "per ruolo" funziona) e `compliance` arricchita col testo canonico di `scoring.ts` (`{name,reference,color,message,action}`).
 
 ### Lezione di processo
 - I chip operativi del 29/05 sono girati **in-place** sulla stessa working dir → collisione col branch della sessione PM. **D'ora in poi: chip/sessioni operative in worktree ISOLATA.**

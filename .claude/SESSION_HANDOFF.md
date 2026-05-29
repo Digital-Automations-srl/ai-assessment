@@ -20,8 +20,8 @@
 
 ## Dashboard v2 — IN PRODUZIONE (deploy 2026-05-29, main `d88269e`)
 - Ridisegno via workflow multi-agente (10 user story, 150 test verdi). Novità: lead scoring **hot/warm/cold** + colonne Priorità/Giorni/Gap/Compliance; preset "Segmenti"; heatmap conformità di mercato; heatmap assi×settore; funnel + maturità per mese; executive summary nel dettaglio; filtro ruolo; KPI board; export CSV arricchito. Logica derivata in `src/lib/admin/lead-scoring.ts` (puro, testato). Mock dietro `ADMIN_MOCK=1`.
-- Lo sponsor ha scelto "mergia e basta" → verifica diretta in prod + iterazione se serve.
-- ⚠️ **Follow-up dati**: i 24 lead recuperati hanno `answers` con chiave `ruolo` invece di `X3` → il filtro/stats "per ruolo" non li include (le altre dimensioni — settore/dimensione/assi/compliance — usano le colonne e funzionano). Fix: UPDATE answers→X3.
+- **Bug fix post-deploy** (commit `cb6e0fb`): `/admin` resa fluida full-width (era cappata a `max-w-7xl`); dettaglio lead non crasha più (`ComplianceChecklist` reso robusto a compliance shape `{area,stato}` dei recuperati).
+- **Follow-up dati RISOLTI** (UPDATE in DB): i 24 recuperati ora hanno `answers.X1/X2/X3` (filtro "per ruolo" ok) e `compliance` arricchita col testo canonico di `scoring.ts`.
 - ⚠️ **Chiarimento**: il RUOLO del rispondente è `answers['X3']`, NON `ai_usage` (= "uso AI dichiarato"). Correggere eventuali note residue.
 
 ## Follow-up aperti
