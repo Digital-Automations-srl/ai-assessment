@@ -1,20 +1,21 @@
 import { formatDateTime } from "@/lib/admin/format";
+import { COLORS, STATUS_COLORS } from "@/lib/design-tokens";
 import type { AuditRow } from "@/lib/admin/audit";
 
 // Mini-vista "ultimi accessi" (SEC-3): Server Component, nessuno stato. Mostra
 // gli ultimi eventi di audit (accessi pagina, login, logout, export).
 const EVENT_META: Record<string, { label: string; fg: string; bg: string }> = {
-  access: { label: "Accesso", fg: "#016FC0", bg: "#e6f1fb" },
-  login_success: { label: "Login", fg: "#16a34a", bg: "#dcfce7" },
-  login_failed: { label: "Login fallito", fg: "#dc2626", bg: "#fef2f2" },
-  logout: { label: "Logout", fg: "#64748b", bg: "#f1f5f9" },
-  export: { label: "Export CSV", fg: "#E09900", bg: "#fef3c7" },
+  access: { label: "Accesso", ...STATUS_COLORS.blue },
+  login_success: { label: "Login", ...STATUS_COLORS.green },
+  login_failed: { label: "Login fallito", ...STATUS_COLORS.red },
+  logout: { label: "Logout", ...STATUS_COLORS.gray },
+  export: { label: "Export CSV", ...STATUS_COLORS.amber },
 };
 
 export default function RecentAccess({ rows }: { rows: AuditRow[] }) {
   return (
     <section className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
-      <h2 className="mb-3 text-base font-extrabold" style={{ color: "#004172" }}>
+      <h2 className="mb-3 text-base font-extrabold" style={{ color: COLORS.navy }}>
         Ultimi accessi e azioni
       </h2>
       {rows.length === 0 ? (

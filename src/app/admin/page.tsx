@@ -5,6 +5,7 @@ import Pagination from "@/components/admin/Pagination";
 import RecentAccess from "@/components/admin/RecentAccess";
 import SubmissionsTable from "@/components/admin/SubmissionsTable";
 import { fetchRecentAudit } from "@/lib/admin/audit";
+import { COLORS } from "@/lib/design-tokens";
 import { filtersToQuery, parseFilters } from "@/lib/admin/filters";
 import { fetchCounts, fetchSubmissions, isConfigError } from "@/lib/admin/queries";
 import { requireAdmin } from "@/lib/admin/session";
@@ -15,7 +16,7 @@ type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 function Kpi({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-xl bg-white px-4 py-3 ring-1 ring-black/5">
-      <div className="text-2xl font-extrabold" style={{ color: "#004172" }}>
+      <div className="text-2xl font-extrabold" style={{ color: COLORS.navy }}>
         {value}
       </div>
       <div className="text-xs font-medium text-gray-500">{label}</div>
@@ -130,7 +131,7 @@ export default async function AdminPage({
     <>
       <AdminNav />
       <main className="w-full px-4 py-6 lg:px-6">
-        <h1 className="mb-4 text-xl font-extrabold" style={{ color: "#004172" }}>
+        <h1 className="mb-4 text-xl font-extrabold" style={{ color: COLORS.navy }}>
           Assessment ricevuti
         </h1>
         {data ? (

@@ -7,6 +7,7 @@
 import opentype from "opentype.js";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { COLORS } from "./design-tokens";
 import type { AxisKey } from "./types";
 
 const AXES_ORDER: AxisKey[] = [
@@ -23,9 +24,9 @@ const AXIS_LABELS: Record<AxisKey, string> = {
 };
 
 const LEVELS = 5;
-const DA_NAVY = "#004172";
-const DA_BLUE = "#016FC0";
-const DA_AMBER = "#E09900";
+const DA_NAVY = COLORS.navy;
+const DA_BLUE = COLORS.blue;
+const DA_AMBER = COLORS.amber;
 
 // Font caricato ON-DEMAND da file binario (CODE-1). Prima era 1.1MB di base64
 // embeddato in src/lib/font-data.ts → deottimizzava il bundle. Ora il .ttf vive
