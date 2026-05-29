@@ -5,11 +5,19 @@ import {
   formatScore,
   dash,
 } from "@/lib/admin/format";
+import {
+  computeComplianceRisk,
+  computeGapTotale,
+  computeLeadTier,
+  daysSince,
+  gapColor,
+} from "@/lib/admin/lead-scoring";
 import type {
   SubmissionFilters,
   SubmissionListItem,
 } from "@/lib/admin/types";
 import { getLevel } from "@/lib/scoring";
+import { RiskBadge, TierBadge } from "./LeadBadge";
 import StatusBadge from "./StatusBadge";
 
 // Intestazione ordinabile: clic → ordina per quella colonna, alternando la
@@ -66,7 +74,9 @@ export default function SubmissionsTable({
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500">
+            <SortHeader col="tier" label="Priorità" filters={filters} />
             <SortHeader col="created_at" label="Data" filters={filters} />
+            <th className="px-3 py-2 text-left font-semibold">Giorni</th>
             <SortHeader col="status" label="Stato" filters={filters} />
             <th className="px-3 py-2 text-left font-semibold">Nome</th>
             <SortHeader col="azienda" label="Azienda" filters={filters} />
@@ -79,6 +89,8 @@ export default function SubmissionsTable({
               className="text-right"
             />
             <th className="px-3 py-2 text-left font-semibold">Livello</th>
+            <th className="px-3 py-2 text-left font-semibold">Gap</th>
+            <th className="px-3 py-2 text-left font-semibold">Compliance</th>
             <th className="px-3 py-2" />
           </tr>
         </thead>
@@ -86,14 +98,22 @@ export default function SubmissionsTable({
           {rows.map((r) => {
             const color =
               r.overall_score != null ? getLevel(r.overall_score).color : "#999";
+            const { tier, reasons } = computeLeadTier(r);
+            const gap = computeGapTotale(r);
+            const risk = computeComplianceRisk(r.compliance);
+            const giorni = daysSince(r.created_at);
             return (
               <tr
                 key={r.id}
                 className="border-b border-gray-100 transition hover:bg-[#f6f8fa]"
               >
+                <td className="px-3 py-2.5">
+                  <TierBadge tier={tier} title={reasons.join(" · ")} />
+                </td>
                 <td className="whitespace-nowrap px-3 py-2.5 text-gray-600">
                   {formatDateTime(r.created_at)}
                 </td>
+                <td className="px-3 py-2.5 text-gray-500">{giorni}</td>
                 <td className="px-3 py-2.5">
                   <StatusBadge status={r.status} />
                 </td>
@@ -115,6 +135,33 @@ export default function SubmissionsTable({
                 </td>
                 <td className="px-3 py-2.5 text-gray-600">
                   {dash(r.overall_label)}
+                </td>
+                <td className="px-3 py-2.5">
+                  {gap == null ? (
+                    <span className="text-gray-300">—</span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="text-sm font-semibold"
+                        style={{ color: gapColor(gap) }}
+                      >
+                        {gap.toFixed(1)}
+                      </span>
+                      <span className="h-1.5 w-12 overflow-hidden rounded-full bg-gray-100">
+                        <span
+                          className="block h-full rounded-full"
+                          style={{
+                            // 0..~18 punti possibili → scala su 18 per la barra
+                            width: `${Math.min(100, (gap / 18) * 100)}%`,
+                            backgroundColor: gapColor(gap),
+                          }}
+                        />
+                      </span>
+                    </span>
+                  )}
+                </td>
+                <td className="px-3 py-2.5">
+                  <RiskBadge risk={risk} />
                 </td>
                 <td className="px-3 py-2.5 text-right">
                   <Link

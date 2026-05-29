@@ -1,5 +1,13 @@
 import AdminNav from "@/components/admin/AdminNav";
-import { AvgBars, DistributionBars, TrendChart } from "@/components/admin/Charts";
+import {
+  AvgBars,
+  AxisSectorHeatmap,
+  ComplianceHeatmap,
+  DistributionBars,
+  Funnel,
+  StackedMonthChart,
+  TrendChart,
+} from "@/components/admin/Charts";
 import { fetchStats, isConfigError } from "@/lib/admin/queries";
 import { requireAdmin } from "@/lib/admin/session";
 import type { AdminStats } from "@/lib/admin/types";
@@ -8,14 +16,16 @@ function Kpi({
   label,
   value,
   sub,
+  color = "#004172",
 }: {
   label: string;
   value: string | number;
   sub?: string;
+  color?: string;
 }) {
   return (
     <div className="rounded-xl bg-white px-4 py-3 ring-1 ring-black/5">
-      <div className="text-2xl font-extrabold" style={{ color: "#004172" }}>
+      <div className="text-2xl font-extrabold" style={{ color }}>
         {value}
       </div>
       <div className="text-xs font-medium text-gray-500">{label}</div>
@@ -43,27 +53,52 @@ function Card({
 
 function StatsView({ stats }: { stats: AdminStats & { capped: boolean } }) {
   const completionPct = Math.round(stats.completionRate * 100);
+  const hotPct = stats.total ? Math.round((stats.hotLeads / stats.total) * 100) : 0;
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      {/* US-9: Summary board KPI esecutivo */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <Kpi label="Totale assessment" value={stats.total} />
         <Kpi
           label="Completati"
-          value={stats.completed}
-          sub={`${completionPct}% del totale`}
+          value={`${completionPct}%`}
+          sub={`${stats.completed} su ${stats.total}`}
+          color="#016FC0"
         />
-        <Kpi label="Anonimi" value={stats.anonymous} />
         <Kpi
-          label="Media complessiva"
+          label="Maturità media"
           value={stats.avgOverall != null ? stats.avgOverall.toFixed(1) : "—"}
           sub={`su ${stats.scoredCount} con punteggio`}
         />
-        <Kpi label="% completati" value={`${completionPct}%`} />
+        <Kpi
+          label="Hot lead"
+          value={`${hotPct}%`}
+          sub={`${stats.hotLeads} lead caldi`}
+          color="#16a34a"
+        />
+        <Kpi
+          label="Area più critica"
+          value={
+            stats.topCriticalArea
+              ? `${stats.topCriticalArea.pct}%`
+              : "—"
+          }
+          sub={stats.topCriticalArea?.area ?? "nessun dato"}
+          color="#E09900"
+        />
+        <Kpi
+          label="Settore più maturo"
+          value={stats.topSector ? stats.topSector.avg.toFixed(1) : "—"}
+          sub={stats.topSector?.settore ?? "nessun dato"}
+        />
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         <Card title="Distribuzione per livello">
           <DistributionBars items={stats.byLabel} />
+        </Card>
+        <Card title="Funnel di conversione">
+          <Funnel steps={stats.funnel} />
         </Card>
         <Card title="Media per dimensione aziendale">
           <AvgBars items={stats.byDipendenti} />
@@ -71,12 +106,24 @@ function StatsView({ stats }: { stats: AdminStats & { capped: boolean } }) {
         <Card title="Media per settore">
           <AvgBars items={stats.bySettore} />
         </Card>
+        <Card title="Per ruolo del rispondente">
+          <AvgBars items={stats.byRuolo} />
+        </Card>
         <Card title="Andamento per mese">
           <TrendChart points={stats.byMonth} />
           <p className="mt-3 text-xs text-gray-400">
             <span style={{ color: "#9ec8e8" }}>■</span> totale ·{" "}
             <span style={{ color: "#004172" }}>■</span> completati
           </p>
+        </Card>
+        <Card title="Conformità di mercato">
+          <ComplianceHeatmap areas={stats.compliance} />
+        </Card>
+        <Card title="Maturità nel tempo">
+          <StackedMonthChart points={stats.byMonth} />
+        </Card>
+        <Card title="Forza/debolezza per settore">
+          <AxisSectorHeatmap rows={stats.axisBySettore} />
         </Card>
       </div>
 

@@ -1,11 +1,20 @@
 import ComplianceChecklist from "@/components/quiz/ComplianceChecklist";
 import SpiderChart from "@/components/quiz/SpiderChart";
 import { dash, formatDateTime, formatScore } from "@/lib/admin/format";
+import {
+  computeComplianceRisk,
+  computeGapTotale,
+  computeLeadTier,
+  gapColor,
+  suggestNextAction,
+  weakestAxis,
+} from "@/lib/admin/lead-scoring";
 import { AXIS_KEYS } from "@/lib/admin/queries";
 import { AXIS_QUESTIONS } from "@/lib/admin/quiz-lookup";
 import type { SubmissionRow } from "@/lib/admin/types";
 import { getLevel, getTargetScore } from "@/lib/scoring";
 import type { AxisKey } from "@/lib/types";
+import { RiskBadge, TierBadge } from "./LeadBadge";
 
 const AXIS_LABEL: Record<string, string> = Object.fromEntries(
   AXIS_QUESTIONS.map((a) => [a.key, a.label])
@@ -63,8 +72,63 @@ export default function SubmissionDetail({ row }: { row: SubmissionRow }) {
   const quizAnswers = row.quiz_answers ?? null;
   const hasAnswers = quizAnswers && Object.keys(quizAnswers).length > 0;
 
+  // ── US-7: Executive summary (riusa le stesse funzioni pure della lista) ──
+  const { tier, reasons } = computeLeadTier(row);
+  const gap = computeGapTotale(row);
+  const risk = computeComplianceRisk(row.compliance);
+  const weak = weakestAxis(row);
+  const nextAction = suggestNextAction({
+    tier,
+    overall_score: row.overall_score,
+    compliance: row.compliance,
+    weakest: weak,
+  });
+
   return (
     <div className="space-y-5">
+      {/* Executive summary */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+          <div className="text-xs font-medium uppercase tracking-wide text-gray-400">
+            Priorità
+          </div>
+          <div className="mt-2">
+            <TierBadge tier={tier} title={reasons.join(" · ")} />
+          </div>
+          <p className="mt-2 text-[11px] leading-snug text-gray-400">
+            {reasons[0] ?? ""}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+          <div className="text-xs font-medium uppercase tracking-wide text-gray-400">
+            Gap totale
+          </div>
+          <div
+            className="mt-1 text-3xl font-extrabold"
+            style={{ color: gap == null ? "#999" : gapColor(gap) }}
+          >
+            {gap == null ? "—" : gap.toFixed(1)}
+          </div>
+          <p className="mt-1 text-[11px] text-gray-400">
+            potenziale di crescita sui 6 assi
+          </p>
+        </div>
+        <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+          <div className="text-xs font-medium uppercase tracking-wide text-gray-400">
+            Rischio compliance
+          </div>
+          <div className="mt-2">
+            <RiskBadge risk={risk} />
+          </div>
+        </div>
+        <div className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+          <div className="text-xs font-medium uppercase tracking-wide text-gray-400">
+            Prossimo passo
+          </div>
+          <p className="mt-1 text-sm leading-snug text-gray-700">{nextAction}</p>
+        </div>
+      </div>
+
       {/* Anagrafica / contesto */}
       <Card title={isCompleted ? "Anagrafica" : "Record anonimo"}>
         {!isCompleted && (
