@@ -103,7 +103,9 @@ export function generateSpiderChartSVG(
   const size = 560;
   const padding = 56;
   const vw = size + padding * 2;
-  const vh = size + padding * 2 + 50;
+  // +72 reserves a two-row legend band: the longer "Obiettivo con Digital
+  // Automations" label no longer fits on one line, so the legend is stacked.
+  const vh = size + padding * 2 + 72;
   const cx = vw / 2;
   const cy = (size + padding * 2) / 2;
   const maxRadius = size * 0.40;
@@ -156,14 +158,30 @@ export function generateSpiderChartSVG(
     });
   });
 
-  // Legend as paths
-  const ly = vh - 30;
-  const legend = `
-    <circle cx="${cx - 120}" cy="${ly}" r="7" fill="${DA_AMBER}"/>
-    ${textToPath("La tua azienda", cx - 106, ly + 5, 13, DA_AMBER, "start")}
-    <circle cx="${cx + 50}" cy="${ly}" r="7" fill="${DA_BLUE}"/>
-    ${textToPath("Obiettivo DA (90gg)", cx + 64, ly + 5, 13, DA_BLUE, "start")}
-  `;
+  // Legend as paths — two stacked rows, each centered on cx. The label
+  // "Obiettivo con Digital Automations (90gg)" is ~250px wide at 13px and would
+  // overflow the old single-row layout (anchored near cx+64), so each entry now
+  // gets its own centered row. Row width is measured with the real font so the
+  // circle+text stays balanced around the chart center regardless of label length.
+  const legendR = 7;
+  const legendGap = 9;
+  const legendFont = 13;
+  const legendLineHeight = 24;
+  const legendRows: { text: string; color: string }[] = [
+    { text: "La tua azienda", color: DA_AMBER },
+    { text: "Obiettivo con Digital Automations (90gg)", color: DA_BLUE },
+  ];
+  const legendBottomY = vh - 26;
+  let legend = "";
+  legendRows.forEach((row, i) => {
+    const rowY = legendBottomY - (legendRows.length - 1 - i) * legendLineHeight;
+    const textW = getFont().getAdvanceWidth(row.text, legendFont);
+    const rowWidth = legendR * 2 + legendGap + textW;
+    const circleCx = cx - rowWidth / 2 + legendR;
+    const textX = circleCx + legendR + legendGap;
+    legend += `<circle cx="${circleCx.toFixed(2)}" cy="${rowY}" r="${legendR}" fill="${row.color}"/>`;
+    legend += textToPath(row.text, textX, rowY + 5, legendFont, row.color, "start");
+  });
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${vw}" height="${vh}" viewBox="0 0 ${vw} ${vh}">
   <rect width="100%" height="100%" fill="white"/>

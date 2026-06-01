@@ -95,7 +95,7 @@ export default function Report({
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: "#016FC0" }} />
-            <span className="text-xs font-semibold" style={{ color: "#016FC0" }}>Obiettivo DA (90gg)</span>
+            <span className="text-xs font-semibold" style={{ color: "#016FC0" }}>Obiettivo con Digital Automations (90gg)</span>
           </div>
         </div>
       </div>
