@@ -15,7 +15,7 @@ interface ReportProps {
   overallMessage: string;
   compliance: ComplianceResult[];
   leadName: string;
-  onThankYou?: () => void;
+  email: string;
 }
 
 export default function Report({
@@ -26,7 +26,7 @@ export default function Report({
   overallMessage,
   compliance,
   leadName,
-  onThankYou,
+  email,
 }: ReportProps) {
   const [expandedAxis, setExpandedAxis] = useState<AxisKey | null>(null);
 
@@ -52,6 +52,26 @@ export default function Report({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      {/* Confirmation banner — il report e' ora la schermata finale (niente
+          pagina di conferma), quindi la conferma dell'invio email vive qui. */}
+      <div
+        className="mb-8 flex items-start gap-3 rounded-lg p-4"
+        style={{ backgroundColor: "#f0fdf4", borderLeft: "4px solid #16a34a" }}
+      >
+        <span
+          className="text-lg font-bold leading-none"
+          style={{ color: "#16a34a" }}
+          aria-hidden="true"
+        >
+          &#x2713;
+        </span>
+        <p className="text-sm leading-relaxed" style={{ color: "#166534" }}>
+          <strong>Fatto!</strong>{" "}
+          Il tuo report &egrave; qui sotto, e l&apos;abbiamo inviato anche a{" "}
+          <strong>{email}</strong>.
+        </p>
+      </div>
+
       {/* Section 1: Profile */}
       <h1
         className="text-center text-2xl font-extrabold"
@@ -95,7 +115,7 @@ export default function Report({
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: "#016FC0" }} />
-            <span className="text-xs font-semibold" style={{ color: "#016FC0" }}>Obiettivo DA (90gg)</span>
+            <span className="text-xs font-semibold" style={{ color: "#016FC0" }}>Obiettivo con Digital Automations (90gg)</span>
           </div>
         </div>
       </div>
@@ -290,19 +310,6 @@ export default function Report({
           </a>
         </div>
       </div>
-
-      {/* Go to thank you */}
-      {onThankYou && (
-        <div className="mt-8 text-center pb-8">
-          <button
-            onClick={onThankYou}
-            className="text-sm font-medium transition-colors cursor-pointer"
-            style={{ color: "#016FC0" }}
-          >
-            Vai alla pagina di conferma &rarr;
-          </button>
-        </div>
-      )}
     </div>
   );
 }

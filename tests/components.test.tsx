@@ -6,7 +6,7 @@ import ContextPage from "@/components/quiz/ContextPage";
 import AxisPage from "@/components/quiz/AxisPage";
 import Results from "@/components/quiz/Results";
 import LeadForm from "@/components/quiz/LeadForm";
-import ThankYou from "@/components/quiz/ThankYou";
+import Report from "@/components/quiz/Report";
 import SpiderChart from "@/components/quiz/SpiderChart";
 import ComplianceChecklist from "@/components/quiz/ComplianceChecklist";
 import ProgressBar from "@/components/quiz/ProgressBar";
@@ -373,16 +373,43 @@ describe("T35 – ComplianceChecklist renders 7 compliance areas", () => {
   });
 });
 
-// ─── T36: ThankYou renders name and email ──────────────────────────────
-describe("T36 – ThankYou component", () => {
-  it("renders the user name", () => {
-    render(<ThankYou name="Mario" email="mario@test.it" />);
-    expect(screen.getByText(/Mario/)).toBeInTheDocument();
+// ─── T36: Report confirmation banner ───────────────────────────────────
+// La pagina di conferma "ThankYou" e' stata rimossa (Option A): la conferma
+// dell'invio email vive ora come banner in cima al Report, che e' la schermata
+// finale del funnel. Questo test copre quel comportamento spostato.
+describe("T36 – Report confirmation banner", () => {
+  const axisResults = AXES.map((a) => ({
+    key: a.key,
+    label: a.label,
+    formal: a.formal,
+    score: 3.0,
+    levelLabel: "In costruzione",
+    levelColor: "#ca8a04",
+  }));
+  const compliance = [
+    { name: "Registro Strumenti AI", reference: "ref", score: 1.0, color: "red" as const, message: "msg", action: "act" },
+    { name: "AI Policy interna", reference: "ref", score: 3.5, color: "green" as const, message: "msg", action: "act" },
+  ];
+  const baseProps = {
+    axisResults,
+    overallScore: 3.0,
+    overallLabel: "In costruzione",
+    overallColor: "#ca8a04",
+    overallMessage: "Test message",
+    compliance,
+    leadName: "Mario",
+    email: "mario@test.it",
+  };
+
+  it("shows the confirmation banner with the lead email", () => {
+    render(<Report {...baseProps} />);
+    expect(screen.getByText(/Fatto!/)).toBeInTheDocument();
+    expect(screen.getByText("mario@test.it")).toBeInTheDocument();
   });
 
-  it("renders the email address", () => {
-    render(<ThankYou name="Mario" email="mario@test.it" />);
-    expect(screen.getByText("mario@test.it")).toBeInTheDocument();
+  it("no longer links to a removed confirmation page", () => {
+    render(<Report {...baseProps} />);
+    expect(screen.queryByText(/pagina di conferma/i)).not.toBeInTheDocument();
   });
 });
 
