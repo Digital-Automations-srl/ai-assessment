@@ -98,4 +98,9 @@
 ### Admin — cancellazione record (richiesta sponsor)
 - Esigenza: cancellare record di test dalla dashboard (ora 2 da togliere). Immediato: SQL Editor Supabase (`delete from submissions where id in (…)`).
 - Studio architettura admin: scritture via `supabaseAdmin` (secret key, bypassa RLS), audit via `recordAudit`/`admin_audit` (colonna `event` = **text**, non enum → nuovi eventi senza migrazione). Detail page per `id`.
-- Sponsor sceglie **Option A: hard delete** (vs B soft/marca-test, C bulk). **Chip "Admin delete" lanciato** (PRD `docs/specs/ADMIN-DELETE_PRD.md`): route `POST /api/admin/delete` (secret key) + bottone con conferma nome/email sul dettaglio + audit `event:"delete"` senza PII + no-op in ADMIN_MOCK. Nessuna migrazione, nessuna dipendenza. Da verificare al ritorno.
+- Sponsor sceglie **Option A: hard delete** (vs B soft/marca-test, C bulk). **Chip "Admin delete" lanciato** (PRD `docs/specs/ADMIN-DELETE_PRD.md`): route `POST /api/admin/delete` (secret key) + bottone con conferma nome/email sul dettaglio + audit `event:"delete"` senza PII + no-op in ADMIN_MOCK. Nessuna migrazione, nessuna dipendenza.
+
+### Merge + deploy dei 2 chip (verificati in PM)
+- Entrambe le sessioni concluse e pushate; gate PM sul `main` mergiato: **build ok · lint pulito · test 179/179**; merge-tree 0 conflitti; spot-check sicurezza su `/api/admin/delete` (protetto dal proxy `/api/admin/*` → 401 senza sessione; secret key; audit no-PII; mock-safe).
+- **Merge sequenziali** `a25cab9` (report-fixes) + `fff2cc0` (admin-delete) → push → **deploy prod**. Branch (locale+remoto) + worktree rimossi. `CLAUDE.md` aggiornato (route delete, rimozione ThankYou, etichetta, teaser Fase 0).
+- Caveat minore: l'etichetta più lunga nello SVG email è stata riadattata (layout); **eyeball su un'email reale** consigliato.

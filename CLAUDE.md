@@ -34,10 +34,11 @@ src/
     proxy.ts                    # (Next 16, NON middleware.ts) protegge /admin/*
     api/send-report/route.ts    # POST: invio email + insert submission (secret key, affidabile)
     api/track-result/route.ts   # POST: cattura anonima allo step "risultati"
-    api/admin/{login,logout,export}/route.ts  # auth dashboard + export CSV
+    api/admin/{login,logout,export,delete}/route.ts  # auth dashboard + export CSV + hard-delete record
     admin/                      # Dashboard riservata: page.tsx, [id]/page.tsx, login/page.tsx, stats/page.tsx
   components/quiz/              # Landing, Instructions, ContextPage, AxisPage, ProgressBar,
-                                #   SpiderChart, Results, LeadForm, Report, ComplianceChecklist, ThankYou
+                                #   SpiderChart, Results, LeadForm, Report, ComplianceChecklist
+                                #   (NB: la pagina "ThankYou" è stata rimossa — il report è la schermata finale)
   components/admin/             # SubmissionsTable, FilterBar, Pagination, SubmissionDetail, Charts, ...
   lib/
     quiz-data.ts                # 33 domande (3 contesto + 30 quiz)
@@ -65,14 +66,16 @@ docs/
 
 ## Note Tecniche
 
-- Quiz = state machine client-side: landing → instructions → context → quiz (6 assi) → results → lead-form → report → thank-you
+- Quiz = state machine client-side: landing → instructions → context → quiz (6 assi) → results → lead-form → **report** (schermata finale; banner di conferma invio email in cima; niente più pagina thank-you)
+- **Cattura/funnel (Fase 0)**: pagina `results` mostra teaser di curiosità (conteggio rischi compliance non-verdi + asse più debole) senza amputare lo scorecard; eventi Plausible `get_report_clicked`/`results_scroll_50/90`/`lead_form_abandoned`. Etichetta legenda ragno: "Obiettivo con Digital Automations (90gg)"
 - Email via `/api/send-report` (POST, nodemailer + AWS SES). Due email: lead (report) + interna a digital@digitalautomations.it
 - **Cattura dati**: insert su `submissions` ora **affidabile** (await + alert interno su fallimento). **Cattura anonima** pre-form via `/api/track-result` + `submission_token` effimero (no PII). `quiz_answers` (jsonb) storicizza le 30 risposte (solo nuovi assessment)
 - **Dashboard `/admin` (v2)**: auth a **password unica** (`ADMIN_PASSWORD`, cookie HMAC), protezione via `proxy.ts`. Letture via `supabase-admin` (Secret key). Sezioni: lista lead (filtri+preset Segmenti+KPI; colonne Priorita'/Giorni/Gap/Compliance), dettaglio (executive summary + SpiderChart + compliance), export CSV arricchito, cruscotto di mercato (`/admin/stats`: heatmap conformita', matrice assi×settore, funnel, maturita' nel tempo, per ruolo)
 - **Metriche derivate lead**: tutte calcolate in `src/lib/admin/lead-scoring.ts` (modulo **puro**, no DB/React, testato): tier hot/warm/cold (soglie centralizzate `TIER_THRESHOLDS`), gap totale, compliance risk, azione consigliata, giorni. Single source of truth riusata da lista, dettaglio ed export. **Ruolo** del rispondente = `answers['X3']` (US-8 filtra su `answers->>'X3'`), NON `ai_usage`. Tier filter: il tier non e' colonna DB → restringimento via predicati AND + raffinamento in memoria (count/paginazione ricalcolati)
 - **Mock dashboard**: `ADMIN_MOCK=1` fa restituire alle query (`src/lib/admin/queries.ts`) un dataset finto deterministico (`src/lib/admin/mock-data.ts`, ~25 lead) per far girare `/admin` senza DB (sandbox). Gate dietro env: mai sul path di produzione
 - **DB `submissions`**: RLS attiva. ⚠️ **SEC-2 (Wave 1)**: la policy insert-anonimo always-true è stata **rimossa** (scritture ora solo via Secret key server-side). Colonne: `quiz_answers, submission_token, status, completed_at, consenso, consenso_marketing` + **Wave 1**: `utm_*` (source/medium/campaign/term/content — DATA-1), `behavior` (jsonb segnali comportamentali — DATA-2). Nota: `ai_usage` contiene il **ruolo** del rispondente (legacy naming)
-- **DB `admin_audit`** (Wave 1 / SEC-3): log accessi e azioni della dashboard (login/logout/export). Scritto da `requireAdmin()` (runtime Node) e dalle route `/api/admin/*`; mini-vista "Ultimi accessi" in `/admin` (`components/admin/RecentAccess.tsx`)
+- **DB `admin_audit`** (Wave 1 / SEC-3): log accessi e azioni della dashboard (login/logout/export/**delete**). Colonna `event` = **text** (non enum → nuovi eventi senza migrazione). Scritto da `requireAdmin()` (runtime Node) e dalle route `/api/admin/*`; mini-vista "Ultimi accessi" in `/admin` (`components/admin/RecentAccess.tsx`)
+- **Cancellazione record** (admin): bottone "Elimina record" sul dettaglio `/admin/[id]` (`components/admin/DeleteSubmissionButton.tsx`) → `POST /api/admin/delete` (hard-delete via Secret key, conferma nome+email, audit `event:"delete"` senza PII, no-op in `ADMIN_MOCK`). Protetto dal proxy (`/api/admin/*`, 401 senza sessione)
 - **Moduli Wave 1** (`src/lib/`): `observability.ts` (OBS-1: retry webhook *awaited*, verifica post-scrittura DB, log strutturato; persistenza DB **prima** del webhook), `admin/audit.ts` (SEC-3), `utm.ts` (DATA-1), `behavior.ts` (DATA-2: plumbing pronto, tie-break tier guidato dal tempo, peso ≤0.09 — non cambia mai la classe tier), `plausible.ts` (GROW-1: eventi custom funnel quiz), `design-tokens.ts` (CODE-3). Font 1.1MB esternalizzato in `src/assets`, letto on-demand (CODE-1). E2e Playwright in `e2e/` (CODE-2)
 - `.env.local` (mai committare): SMTP_* · NEXT_PUBLIC_SUPABASE_URL · SUPABASE_ANON_KEY · **SUPABASE_SECRET_KEY** · **ADMIN_PASSWORD** · **ADMIN_SESSION_SECRET** (SEC-1: **obbligatorio in produzione**, fail-closed; in dev fallback su `ADMIN_PASSWORD`) · ENCHARGE_WEBHOOK_URL. ⚠️ se un valore contiene `#`, **quotalo** (dotenv tronca al `#` non quotato)
 - Specifiche complete: `docs/specs/QUIZ_SPECS.md`
