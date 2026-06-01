@@ -7,6 +7,7 @@
 //  - 'login_success' / 'login_failed' → /api/admin/login
 //  - 'logout'        → /api/admin/logout
 //  - 'export'        → /api/admin/export
+//  - 'delete'        → /api/admin/delete (hard-delete di una submission)
 // Nota runtime: il logging degli accessi vive in requireAdmin() (Server
 // Component, runtime Node garantito) e NON nel proxy, che e' runtime-agnostico
 // Edge+Node (vedi auth.ts) dove una scrittura DB sarebbe inaffidabile/pesante.
@@ -20,7 +21,10 @@ export type AuditEvent =
   | "login_success"
   | "login_failed"
   | "logout"
-  | "export";
+  | "export"
+  // ADMIN-DELETE: cancellazione hard di una submission dal dettaglio admin.
+  // detail = { id } soltanto (mai PII: niente email/nome), come l'export.
+  | "delete";
 
 export type AuditOutcome = "ok" | "denied" | "error";
 
