@@ -104,3 +104,8 @@
 - Entrambe le sessioni concluse e pushate; gate PM sul `main` mergiato: **build ok · lint pulito · test 179/179**; merge-tree 0 conflitti; spot-check sicurezza su `/api/admin/delete` (protetto dal proxy `/api/admin/*` → 401 senza sessione; secret key; audit no-PII; mock-safe).
 - **Merge sequenziali** `a25cab9` (report-fixes) + `fff2cc0` (admin-delete) → push → **deploy prod**. Branch (locale+remoto) + worktree rimossi. `CLAUDE.md` aggiornato (route delete, rimozione ThankYou, etichetta, teaser Fase 0).
 - Caveat minore: l'etichetta più lunga nello SVG email è stata riadattata (layout); **eyeball su un'email reale** consigliato.
+
+### Chiusura sessione PM (housekeeping)
+- **Memoria progetto ripulita**: rimossi 2 file stale (`wave1-pending-manual-steps.md`, `admin-delete-branch-ready.md`), indice `MEMORY.md` aggiornato.
+- **Pulizia sessioni archiviate** (195 totali, tutti i progetti): **delegata a una sessione dedicata sotto GestioneMac** (system-management) — nota/handoff consegnata allo sponsor con metodo verificato (indice in `~/Library/Application Support/Claude/claude-code-sessions/`, transcript in `~/.claude/projects/`, cancellazione metadata-only reversibile, backup già fatto su `~/Desktop`). NON eseguita qui.
+- Stato repo a fine sessione: `main` pulito, allineato a origin (`b89e669`), un solo branch, nessuna worktree. Nessuna sessione operativa AI-Assessment pendente.
