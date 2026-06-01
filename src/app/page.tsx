@@ -15,7 +15,6 @@ import AxisPage from "@/components/quiz/AxisPage";
 import Results from "@/components/quiz/Results";
 import LeadForm from "@/components/quiz/LeadForm";
 import Report from "@/components/quiz/Report";
-import ThankYou from "@/components/quiz/ThankYou";
 
 type Step =
   | "landing"
@@ -24,8 +23,7 @@ type Step =
   | "quiz"
   | "results"
   | "lead-form"
-  | "report"
-  | "thank-you";
+  | "report";
 
 export default function QuizPage() {
   const [step, setStep] = useState<Step>("landing");
@@ -204,9 +202,7 @@ export default function QuizPage() {
   };
 
   const r =
-    step === "results" || step === "report" || step === "thank-you"
-      ? computeResults()
-      : null;
+    step === "results" || step === "report" ? computeResults() : null;
 
   // Funnel Fase 0 — dati derivati per il teaser di curiosità sui risultati
   // (no nuovo stato, no PII): conteggio aree compliance con un gap (non verdi)
@@ -295,15 +291,7 @@ export default function QuizPage() {
             overallMessage={r.overallMessage}
             compliance={r.compliance}
             leadName={leadData.nome}
-            onThankYou={() => {
-              setStep("thank-you");
-              scrollToTop();
-            }}
           />
-        )}
-
-        {step === "thank-you" && leadData && (
-          <ThankYou name={leadData.nome} email={leadData.email} />
         )}
       </main>
     </>

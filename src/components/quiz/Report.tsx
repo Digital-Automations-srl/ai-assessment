@@ -15,7 +15,6 @@ interface ReportProps {
   overallMessage: string;
   compliance: ComplianceResult[];
   leadName: string;
-  onThankYou?: () => void;
 }
 
 export default function Report({
@@ -26,7 +25,6 @@ export default function Report({
   overallMessage,
   compliance,
   leadName,
-  onThankYou,
 }: ReportProps) {
   const [expandedAxis, setExpandedAxis] = useState<AxisKey | null>(null);
 
@@ -290,19 +288,6 @@ export default function Report({
           </a>
         </div>
       </div>
-
-      {/* Go to thank you */}
-      {onThankYou && (
-        <div className="mt-8 text-center pb-8">
-          <button
-            onClick={onThankYou}
-            className="text-sm font-medium transition-colors cursor-pointer"
-            style={{ color: "#016FC0" }}
-          >
-            Vai alla pagina di conferma &rarr;
-          </button>
-        </div>
-      )}
     </div>
   );
 }
