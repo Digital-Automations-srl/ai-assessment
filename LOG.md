@@ -94,3 +94,8 @@
 - Diagnosi: (1b) link call rotto a `calendly.com/digital-automations` in `ThankYou.tsx:43`; (2) "Torna al tuo profilo" (`ThankYou.tsx:63`) fa solo `scrollTo(top)` → non torna a nulla; (3) etichetta "Obiettivo **DA** (90gg)" poco chiara in `Results.tsx:112`, `Report.tsx:98`, `spider-chart-svg.ts:165` (email). Il link call **corretto** è `Report.tsx:277` (landing demo-ai-stater-program).
 - **Punto 4 (pagina conferma)**: aggiunge solo "report inviato a {email}", 2 link rotti, **zero eventi analytics** → sponsor sceglie **Option A: eliminarla**, conferma come banner sul report.
 - **Chip "Report fixes" lanciato** (PRD `docs/specs/REPORT-FIXES_PRD.md`): etichetta in 3 punti (caveat overflow SVG email), rimozione step thank-you + `ThankYou.tsx` + banner conferma sul report. Worktree isolata; non deploya/mergia. Da verificare al ritorno.
+
+### Admin — cancellazione record (richiesta sponsor)
+- Esigenza: cancellare record di test dalla dashboard (ora 2 da togliere). Immediato: SQL Editor Supabase (`delete from submissions where id in (…)`).
+- Studio architettura admin: scritture via `supabaseAdmin` (secret key, bypassa RLS), audit via `recordAudit`/`admin_audit` (colonna `event` = **text**, non enum → nuovi eventi senza migrazione). Detail page per `id`.
+- Sponsor sceglie **Option A: hard delete** (vs B soft/marca-test, C bulk). **Chip "Admin delete" lanciato** (PRD `docs/specs/ADMIN-DELETE_PRD.md`): route `POST /api/admin/delete` (secret key) + bottone con conferma nome/email sul dettaglio + audit `event:"delete"` senza PII + no-op in ADMIN_MOCK. Nessuna migrazione, nessuna dipendenza. Da verificare al ritorno.

@@ -40,6 +40,8 @@
 - 🧹 Igiene: `.claude/worktrees/` aggiunto a `.gitignore` **e** agli ignore di ESLint (`eslint.config.mjs`) — le worktree annidate dei chip facevano esplodere `npm run lint` da root.
 - 📏 **Da fare tra ~1-2 settimane**: leggere R1 (`lead_form_viewed/results_viewed`) + nuovi eventi su Plausible. ⚠️ baseline pre-teaser quasi assente (GROW-1+teaser stesso giorno) → leggere in assoluto, non come delta del teaser. Tema unico con PROD-3.
 - 🔧 **Report fixes — LANCIATA** (chip, PRD `docs/specs/REPORT-FIXES_PRD.md`): etichetta "Obiettivo DA"→"…con Digital Automations" (3 punti incl. SVG email), **rimozione pagina di conferma** (Option A: banner sul report + elimina ThankYou + 2 link rotti calendly/"torna al profilo"). Worktree isolata; NON deploya/mergia. **VERIFICARE al ritorno.**
+- 🔧 **Admin delete — LANCIATA** (chip, PRD `docs/specs/ADMIN-DELETE_PRD.md`): hard delete record singolo dal dettaglio `/admin/[id]` (route `POST /api/admin/delete` via secret key + conferma nome/email + audit `event:"delete"` senza PII). **Nessuna migrazione** (`admin_audit.event` è text). Worktree isolata; NON deploya/mergia. **VERIFICARE al ritorno.**
+- 🗑️ **Record di test immediati**: lo sponsor può cancellarli dal SQL Editor Supabase (`select … ; delete from submissions where id in (…)`) senza attendere la feature.
 
 ## Sessioni operative aperte
 - ✅ Nessuna. Wave 1 mergiata e branch/worktree ripuliti (resta solo `main`).
