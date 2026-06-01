@@ -291,6 +291,7 @@ export default function QuizPage() {
             overallMessage={r.overallMessage}
             compliance={r.compliance}
             leadName={leadData.nome}
+            email={leadData.email}
           />
         )}
       </main>
