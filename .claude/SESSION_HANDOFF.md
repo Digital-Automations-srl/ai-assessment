@@ -39,6 +39,7 @@
 - ❌ **GROW-3 PDF — ABBANDONATO** (PDF troppo complesso; sponsor ha bloccato la sessione). Nessun residuo git. PRD rimosso. Eventuale ripensamento: servizio esterno HTML→PDF (vedi matrice).
 - 🧹 Igiene: `.claude/worktrees/` aggiunto a `.gitignore` **e** agli ignore di ESLint (`eslint.config.mjs`) — le worktree annidate dei chip facevano esplodere `npm run lint` da root.
 - 📏 **Da fare tra ~1-2 settimane**: leggere R1 (`lead_form_viewed/results_viewed`) + nuovi eventi su Plausible. ⚠️ baseline pre-teaser quasi assente (GROW-1+teaser stesso giorno) → leggere in assoluto, non come delta del teaser. Tema unico con PROD-3.
+- 🔧 **Report fixes — LANCIATA** (chip, PRD `docs/specs/REPORT-FIXES_PRD.md`): etichetta "Obiettivo DA"→"…con Digital Automations" (3 punti incl. SVG email), **rimozione pagina di conferma** (Option A: banner sul report + elimina ThankYou + 2 link rotti calendly/"torna al profilo"). Worktree isolata; NON deploya/mergia. **VERIFICARE al ritorno.**
 
 ## Sessioni operative aperte
 - ✅ Nessuna. Wave 1 mergiata e branch/worktree ripuliti (resta solo `main`).
