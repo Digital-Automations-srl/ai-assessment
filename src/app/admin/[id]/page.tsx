@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AdminNav from "@/components/admin/AdminNav";
+import DeleteSubmissionButton from "@/components/admin/DeleteSubmissionButton";
 import StatusBadge from "@/components/admin/StatusBadge";
 import SubmissionDetail from "@/components/admin/SubmissionDetail";
 import { formatDateTime } from "@/lib/admin/format";
@@ -62,6 +63,18 @@ export default async function SubmissionDetailPage({
               </span>
             </div>
             <SubmissionDetail row={row} />
+
+            {/* Zona pericolosa: hard-delete del record (con conferma). */}
+            <div className="mt-6 flex items-center justify-end gap-3 border-t border-gray-100 pt-5">
+              <span className="text-xs text-gray-400">
+                Rimuove definitivamente questo record dal database.
+              </span>
+              <DeleteSubmissionButton
+                id={row.id}
+                nome={row.nome}
+                email={row.email}
+              />
+            </div>
           </>
         ) : (
           <div className="mt-4 rounded-xl bg-amber-50 p-6 text-sm ring-1 ring-amber-200">
