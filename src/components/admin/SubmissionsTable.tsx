@@ -79,6 +79,7 @@ export default function SubmissionsTable({
             <th className="px-3 py-2 text-left font-semibold">Giorni</th>
             <SortHeader col="status" label="Stato" filters={filters} />
             <th className="px-3 py-2 text-left font-semibold">Nome</th>
+            <SortHeader col="cognome" label="Cognome" filters={filters} />
             <SortHeader col="azienda" label="Azienda" filters={filters} />
             <SortHeader col="settore" label="Settore" filters={filters} />
             <th className="px-3 py-2 text-left font-semibold">Dimensione</th>
@@ -118,6 +119,7 @@ export default function SubmissionsTable({
                   <StatusBadge status={r.status} />
                 </td>
                 <td className="px-3 py-2.5 text-gray-700">{dash(r.nome)}</td>
+                <td className="px-3 py-2.5 text-gray-700">{dash(r.cognome)}</td>
                 <td className="px-3 py-2.5 font-medium text-[#004172]">
                   <Link href={`/admin/${r.id}`} className="hover:underline">
                     {dash(r.azienda)}

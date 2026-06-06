@@ -59,6 +59,7 @@ export type SubmissionListItem = Pick<
   | "completed_at"
   | "status"
   | "nome"
+  | "cognome"
   | "email"
   | "azienda"
   | "settore"
@@ -72,7 +73,7 @@ export type SubmissionListItem = Pick<
 >;
 
 export const LIST_COLUMNS =
-  "id,created_at,completed_at,status,nome,email,azienda,settore,dipendenti,overall_score,overall_label,consenso_marketing,compliance,behavior,score_conformita,score_processi,score_utilizzo,score_autonomia,score_protezione,score_tecnologia";
+  "id,created_at,completed_at,status,nome,cognome,email,azienda,settore,dipendenti,overall_score,overall_label,consenso_marketing,compliance,behavior,score_conformita,score_processi,score_utilizzo,score_autonomia,score_protezione,score_tecnologia";
 
 // ── Facet per i filtri (deterministici: vengono dalle domande di contesto,
 // non da una query DISTINCT — cosi' i dropdown funzionano anche a DB vuoto). ──
@@ -116,6 +117,7 @@ export const SORTABLE_COLUMNS: Record<string, string> = {
   azienda: "azienda",
   status: "status",
   settore: "settore",
+  cognome: "cognome",
 };
 
 // Chiavi di ordinamento "sintetiche": non sono colonne DB ma metriche derivate.
